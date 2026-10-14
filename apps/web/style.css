@@ -1985,6 +1985,32 @@ html.compact-ui .touch-boost-btn { right: 16px; bottom: calc(88px + env(safe-are
 .compact-toggle.on { border-color: #4FC3F7 !important; box-shadow: 0 0 12px rgba(79, 195, 247, .5); }
 
 /* ============================================================
+   FIRST-TIME GUIDE — 4 small cards, phone-friendly
+   ============================================================ */
+.guide-card { max-width: 460px; padding: 26px 24px 20px; gap: 16px; text-align: center; }
+.guide-steps { position: relative; }
+.guide-step { display: none; flex-direction: column; align-items: center; gap: 10px; }
+.guide-step.active { display: flex; animation: guideIn .25s ease; }
+@keyframes guideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.guide-emoji { font-size: 3rem; line-height: 1; }
+.guide-title { font-size: 1.25rem; font-weight: 900; color: #4FC3F7; text-transform: uppercase; letter-spacing: 1px; }
+.guide-text { font-size: .92rem; line-height: 1.55; color: rgba(255, 255, 255, .85); max-width: 36ch; }
+.guide-footer { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.guide-dots { display: flex; gap: 6px; justify-content: center; }
+.guide-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .25); transition: background .2s; }
+.guide-dot.active { background: #4FC3F7; box-shadow: 0 0 8px rgba(79, 195, 247, .6); }
+.guide-actions { display: flex; gap: 10px; }
+.guide-actions .btn-primary { flex: 1; }
+.guide-actions .btn-secondary { flex: 0 0 auto; }
+
+html.compact-ui .guide-card { padding: 18px 16px 14px; }
+html.compact-ui .guide-emoji { font-size: 2.4rem; }
+html.compact-ui .guide-title { font-size: 1.05rem; }
+html.compact-ui .guide-text { font-size: .84rem; }
+html.compact-ui .guide-actions .btn-primary { padding: 12px 14px; font-size: .95rem; }
+html.compact-ui .guide-actions .btn-secondary { padding: 12px 14px; font-size: .8rem; }
+
+/* ============================================================
    MOBILE / TOUCH PASS — phones first, tablets, landscape
    ============================================================ */
 

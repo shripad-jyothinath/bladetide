@@ -110,6 +110,7 @@
                     <div class="menu-actions">
                         <button class="btn-secondary" onclick="openShop('fish')">🐟 Armory</button>
                         <button class="btn-secondary" onclick="openShop('upgrades')">⚡ Workshop</button>
+                        <button class="btn-secondary" onclick="openGuide()">🎓 Guide</button>
                         <button class="btn-secondary" onclick="openHowToPlay()">❓ Help</button>
                         <button class="btn-secondary compact-toggle" title="Compact UI for small screens">📱 Compact</button>
                     </div>
@@ -430,6 +431,43 @@
             </div>
         </div>
 
+        <!-- ===== FIRST-TIME GUIDE ===== -->
+        <div id="guideModal" class="modal-backdrop hidden">
+            <div class="modal-card guide-card">
+                <div class="guide-steps">
+                    <div class="guide-step active">
+                        <div class="guide-emoji">🕹️</div>
+                        <div class="guide-title">Steer</div>
+                        <div class="guide-text">Move with your mouse (or WASD / arrow keys). On a phone, just drag anywhere on the water.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-emoji">⚡</div>
+                        <div class="guide-title">Boost</div>
+                        <div class="guide-text">Hold <b>Space</b> / <b>Shift</b> / click — or the <b>BOOST</b> button — for a burst of speed. It drains stamina; eating refills it.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-emoji">🗡️</div>
+                        <div class="guide-title">Slice &amp; grow</div>
+                        <div class="guide-text">Your blade is on your snout: hit fish from the side or behind to slice them. Eat sushi and meat to level up.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-emoji">👑</div>
+                        <div class="guide-title">Goals &amp; gear</div>
+                        <div class="guide-text">Play the 15 stages, smash chests, grab power-ups and earn gold. Buy fish, weapons and hats in the shop. Online is real players — no bots.</div>
+                    </div>
+                </div>
+                <div class="guide-footer">
+                    <div class="guide-dots">
+                        <span class="guide-dot active"></span><span class="guide-dot"></span><span class="guide-dot"></span><span class="guide-dot"></span>
+                    </div>
+                    <div class="guide-actions">
+                        <button class="btn-secondary" onclick="closeGuide()" title="Dismiss">Skip</button>
+                        <button class="btn-primary" id="guideNext" onclick="advanceGuide()">Next ➡️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ===== GAME OVER MODAL ===== -->
         <div id="gameOverModal" class="modal-backdrop hidden">
             <div class="modal-card gameover-card">
@@ -500,6 +538,11 @@
             renderLevelChallenges();
             initPreview();
             drawWheel();
+
+            // First visit: show the mini guide once (skippable).
+            if (!localStorage.getItem('fishio_guide_seen')) {
+                setTimeout(() => { if (typeof openGuide === 'function') openGuide(); }, 700);
+            }
 
             const nameInput = document.getElementById('playerNameInput');
             if (nameInput) {
@@ -1369,6 +1412,36 @@
         function closeHowToPlay() {
             document.getElementById('howToPlayModal').classList.add('hidden');
         }
+
+        // --- First-time guide (4 small cards, skippable, reopen via 🎓 Guide) ---
+        let guideStep = 0;
+        function openGuide() {
+            guideStep = 0;
+            renderGuide();
+            document.getElementById('guideModal').classList.remove('hidden');
+            if (window.soundEngine) window.soundEngine.playClick();
+        }
+        function renderGuide() {
+            const steps = document.querySelectorAll('#guideModal .guide-step');
+            const dots = document.querySelectorAll('#guideModal .guide-dot');
+            steps.forEach((el, i) => el.classList.toggle('active', i === guideStep));
+            dots.forEach((el, i) => el.classList.toggle('active', i === guideStep));
+            const btn = document.getElementById('guideNext');
+            if (btn) btn.textContent = guideStep >= steps.length - 1 ? "Let's play 🚀" : 'Next ➡️';
+        }
+        function advanceGuide() {
+            const steps = document.querySelectorAll('#guideModal .guide-step');
+            if (guideStep < steps.length - 1) { guideStep++; renderGuide(); }
+            else closeGuide();
+        }
+        function closeGuide() {
+            document.getElementById('guideModal').classList.add('hidden');
+            try { localStorage.setItem('fishio_guide_seen', '1'); } catch (e) { /* private mode */ }
+        }
+        window.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('guideModal');
+            if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) closeGuide();
+        });
     </script>
 
     <script>
