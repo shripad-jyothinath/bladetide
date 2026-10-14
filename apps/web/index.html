@@ -111,6 +111,7 @@
                         <button class="btn-secondary" onclick="openShop('fish')">🐟 Armory</button>
                         <button class="btn-secondary" onclick="openShop('upgrades')">⚡ Workshop</button>
                         <button class="btn-secondary" onclick="openHowToPlay()">❓ Help</button>
+                        <button class="btn-secondary compact-toggle" title="Compact UI for small screens">📱 Compact</button>
                     </div>
 
                     <div class="quick-stats">
@@ -174,6 +175,7 @@
             <!-- Top Left: Stats -->
             <div class="hud-top-left">
                 <button class="hud-pause-btn" id="hudPauseBtn" onclick="togglePauseGame()" title="Pause Game (ESC / P)">⏸️</button>
+                <button class="hud-pause-btn compact-toggle" title="Compact UI (phone mode)">📱</button>
                 <div id="onlineBadge" class="hud-stat-pill online-badge hidden">🌐 <span id="onlinePing">--</span>ms</div>
                 <div class="hud-stat-pill">
                     <span class="icon">⭐</span>
@@ -1367,6 +1369,44 @@
         function closeHowToPlay() {
             document.getElementById('howToPlayModal').classList.add('hidden');
         }
+    </script>
+
+    <script>
+        // --- Compact UI mode ---------------------------------------------------
+        // Shrinks the menu/HUD on small screens AND when the viewport stays
+        // desktop-sized (streamed/remote viewing on a phone). Auto-on for coarse
+        // pointers / <= 820px; otherwise the 📱 toggle controls it (remembered).
+        (function () {
+            const KEY = 'fishio_compact_ui';
+            const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+            const autoOn = () => coarse || window.innerWidth <= 820;
+
+            const apply = (on) => {
+                document.documentElement.classList.toggle('compact-ui', on);
+                document.querySelectorAll('.compact-toggle').forEach((b) => {
+                    b.classList.toggle('on', on);
+                    b.title = on ? 'Compact UI: ON (tap to turn off)' : 'Compact UI: OFF (tap to turn on)';
+                });
+            };
+
+            const saved = localStorage.getItem(KEY);
+            apply(saved === null ? autoOn() : saved === '1');
+
+            document.querySelectorAll('.compact-toggle').forEach((b) => {
+                b.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const on = !document.documentElement.classList.contains('compact-ui');
+                    localStorage.setItem(KEY, on ? '1' : '0');
+                    apply(on);
+                    if (window.soundEngine) window.soundEngine.playClick();
+                });
+            });
+
+            window.addEventListener('resize', () => {
+                if (localStorage.getItem(KEY) === null) apply(autoOn());
+            });
+        })();
     </script>
 </body>
 </html>
