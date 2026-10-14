@@ -539,9 +539,16 @@
             initPreview();
             drawWheel();
 
-            // First visit: show the mini guide once (skippable).
+            // First visit: show the mini guide once — but only from the menu.
+            // If the player already jumped into a match, queue it for the menu.
             if (!localStorage.getItem('fishio_guide_seen')) {
-                setTimeout(() => { if (typeof openGuide === 'function') openGuide(); }, 700);
+                setTimeout(() => {
+                    if (typeof game !== 'undefined' && game && game.gameState !== 'menu') {
+                        guidePending = true;
+                    } else if (typeof openGuide === 'function') {
+                        openGuide();
+                    }
+                }, 700);
             }
 
             const nameInput = document.getElementById('playerNameInput');
@@ -1063,6 +1070,12 @@
             highlightSelectedMap();
             renderLevelChallenges();
             updatePreviewFish();
+
+            // A first-run guide that was queued while a match was running shows now.
+            if (guidePending && !localStorage.getItem('fishio_guide_seen')) {
+                guidePending = false;
+                openGuide();
+            }
         }
 
         function openShop(tab = 'fish') {
@@ -1415,10 +1428,29 @@
 
         // --- First-time guide (4 small cards, skippable, reopen via 🎓 Guide) ---
         let guideStep = 0;
+        let guidePending = false;      // first-run guide waiting until the menu is visible
+        let guidePrevInvuln = null;    // player protection while the guide is open
+        let guidePaused = false;
+
         function openGuide() {
             guideStep = 0;
             renderGuide();
             document.getElementById('guideModal').classList.remove('hidden');
+
+            // Safety: a player must never be killed while reading the guide.
+            if (typeof game !== 'undefined' && game && game.gameState === 'playing' && game.player && !game.player.isDead) {
+                guidePrevInvuln = game.player.invulnerableTimer;
+                game.player.invulnerableTimer = Math.max(guidePrevInvuln, 600);
+                // Offline matches pause; online arenas can't pause, so the
+                // auto-show is menu-only and this path is belt-and-braces only.
+                if (!game.online && typeof game.pauseGame === 'function' && !game.isPaused) {
+                    guidePaused = true;
+                    game.pauseGame();
+                    const pauseModal = document.getElementById('pauseModal');
+                    if (pauseModal) pauseModal.classList.add('hidden'); // the guide is what's on screen
+                }
+            }
+
             if (window.soundEngine) window.soundEngine.playClick();
         }
         function renderGuide() {
@@ -1436,6 +1468,17 @@
         }
         function closeGuide() {
             document.getElementById('guideModal').classList.add('hidden');
+
+            // Restore exactly the protection state we found.
+            if (guidePrevInvuln !== null && typeof game !== 'undefined' && game && game.player) {
+                game.player.invulnerableTimer = guidePrevInvuln;
+            }
+            guidePrevInvuln = null;
+            if (guidePaused && typeof game !== 'undefined' && game) {
+                guidePaused = false;
+                game.resumeGame();
+            }
+
             try { localStorage.setItem('fishio_guide_seen', '1'); } catch (e) { /* private mode */ }
         }
         window.addEventListener('keydown', (e) => {
