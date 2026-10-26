@@ -1,5 +1,5 @@
 /**
- * Fish.IO API + website server.
+ * Bladetide API + website server.
  *
  * One origin serves the static game (apps/web) and the API, so session
  * cookies and save sync work without CORS:
@@ -49,7 +49,7 @@ export function buildServer(config: ApiConfig): FastifyInstance {
 
   // Cross-site deployments (e.g. the game on Vercel, API here) need an explicit
   // origin allowlist with credentials; local same-origin play needs nothing.
-  // Entries support simple wildcards, e.g. https://fish-game-*.vercel.app (previews).
+  // Entries support simple wildcards, e.g. https://bladetide-*.vercel.app (previews).
   if (config.webOrigins.length > 0) {
     const patterns = config.webOrigins.map(
       (origin) => new RegExp(`^${origin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*')}$`),
@@ -68,7 +68,7 @@ export function buildServer(config: ApiConfig): FastifyInstance {
   app.get('/healthz', async () => ({ ok: true }));
 
   app.get('/api/v1/status', async () => ({
-    service: 'fishio-api',
+    service: 'bladetide-api',
     version: '0.1.0',
     env: config.nodeEnv,
     time: new Date().toISOString(),

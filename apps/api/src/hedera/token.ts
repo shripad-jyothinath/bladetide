@@ -85,7 +85,7 @@ export class TokenService {
     const tx = new TransferTransaction()
       .addTokenTransfer(tokenId, fromAccountId, -base)
       .addTokenTransfer(tokenId, this.hedera.operatorId, base)
-      .setTransactionMemo('Fish.IO shop purchase');
+      .setTransactionMemo('Bladetide shop purchase');
     const frozen = await tx.freezeWith(this.hedera.client);
     await frozen.sign(signerKey);
     const response = await frozen.execute(this.hedera.client);

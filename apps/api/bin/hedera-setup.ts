@@ -1,5 +1,5 @@
 /**
- * One-command Hedera setup for Fish.IO.
+ * One-command Hedera setup for Bladetide.
  *
  *   npm run hedera:setup -- --write-env
  *   npm run hedera:setup -- --demo-account
@@ -8,7 +8,7 @@
  * (or the environment). Creates, if missing:
  *   1. the HCS topic for match attestations
  *   2. the $GOLD HTS fungible token
- *   3. the "Fish.IO Originals" NFT collection
+ *   3. the "Bladetide Originals" NFT collection
  *
  * --write-env      store the created IDs in apps/api/.env
  * --demo-account   also create a fresh Hedera account, fund it, send GOLD
@@ -22,6 +22,7 @@ import { loadHederaSettings, hashscanNftUrl, hashscanTopicUrl, hashscanTxUrl } f
 import { createHederaServices } from '../src/hedera/services.ts';
 import { openDatabase } from '../src/db.ts';
 import { loadDotEnv } from '../src/env.ts';
+import { resolveDbPath } from '../src/config.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENV_PATH = path.resolve(HERE, '../.env');
@@ -70,15 +71,14 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const dbPath = process.env.FISHIO_DB_PATH || path.resolve(HERE, '../data/fishio.db');
-  const store = openDatabase(dbPath);
+  const store = openDatabase(resolveDbPath());
   const services = createHederaServices(store, settings);
   if (!services.online || !services.hcs || !services.token || !services.nft || !services.hedera) {
     console.error('Operator client could not be created:', services.credentialsError ?? 'unknown error');
     process.exit(1);
   }
 
-  console.log(`\nFish.IO × Hedera setup — ${settings.network}`);
+  console.log(`\nBladetide × Hedera setup — ${settings.network}`);
   console.log(`Operator: ${settings.operatorId} (balance: ${await hbarBalance({ mirrorBaseUrl: settings.mirrorBaseUrl, operatorId: settings.operatorId })})\n`);
 
   const updates: Record<string, string> = { HEDERA_NETWORK: settings.network };
@@ -120,7 +120,7 @@ async function main(): Promise<void> {
     const createTx = await new AccountCreateTransaction()
       .setKeyWithoutAlias(demoKey.publicKey)
       .setInitialBalance(new Hbar(50))
-      .setAccountMemo('Fish.IO demo account')
+      .setAccountMemo('Bladetide demo account')
       .execute(services.hedera.client);
     const receipt = await createTx.getReceipt(services.hedera.client);
     const demoAccountId = receipt.accountId?.toString();

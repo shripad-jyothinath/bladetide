@@ -1,4 +1,4 @@
-# Fish.IO — Real-time Multiplayer Plan (Common Map)
+# Bladetide — Real-time Multiplayer Plan (Common Map)
 
 > Companion docs: `docs/DATABASE_PLAN.md`, `docs/HEDERA_PLAN.md`.
 >

@@ -81,7 +81,7 @@ export function loadGame(options = {}) {
     document,
     localStorage: createStorage(),
     performance: { now: () => clock.now },
-    navigator: { userAgent: 'fishio-game-core/headless', language: 'en' },
+    navigator: { userAgent: 'bladetide-game-core/headless', language: 'en' },
     location: { href: 'http://localhost/', search: '' },
     // Timers are virtual so simulation timing is deterministic.
     setTimeout(fn, ms = 0, ...args) {

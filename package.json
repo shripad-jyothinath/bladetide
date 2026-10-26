@@ -1,28 +1,31 @@
 {
-  "name": "fish-io",
+  "name": "bladetide",
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm --workspace @fishio/api run dev",
-    "api:dev": "npm --workspace @fishio/api run dev",
-    "api:start": "npm --workspace @fishio/api run start",
-    "room:dev": "npm --workspace @fishio/room-server run dev",
-    "room:start": "npm --workspace @fishio/room-server run start",
-    "room:test": "npm --workspace @fishio/room-server run test",
-    "room:typecheck": "npm --workspace @fishio/room-server run typecheck",
-    "web:serve": "python -m http.server 8137 --bind 127.0.0.1 -d apps/web",
+    "dev": "npm --workspace @bladetide/api run dev",
+    "api:dev": "npm --workspace @bladetide/api run dev",
+    "api:start": "npm --workspace @bladetide/api run start",
+    "room:dev": "npm --workspace @bladetide/room-server run dev",
+    "room:start": "npm --workspace @bladetide/room-server run start",
+    "room:test": "npm --workspace @bladetide/room-server run test",
+    "room:typecheck": "npm --workspace @bladetide/room-server run typecheck",
+    "web:serve": "node scripts/serve-web.mjs apps/web 8137",
     "game-core:test": "node --test packages/game-core/test/sim.test.js",
     "game-core:sim": "node packages/game-core/bin/sim.js",
-    "api:test": "npm --workspace @fishio/api run test",
+    "api:test": "npm --workspace @bladetide/api run test",
     "api:typecheck": "tsc --noEmit -p apps/api",
-    "hedera:setup": "npm --workspace @fishio/api run hedera:setup --",
-    "hedera:wallet": "npm --workspace @fishio/api run hedera:wallet --",
-    "hedera:claim": "npm --workspace @fishio/api run hedera:claim --",
+    "hedera:setup": "npm --workspace @bladetide/api run hedera:setup --",
+    "hedera:wallet": "npm --workspace @bladetide/api run hedera:wallet --",
+    "hedera:claim": "npm --workspace @bladetide/api run hedera:claim --",
     "typecheck": "tsc --noEmit -p apps/api && tsc --noEmit -p apps/room-server"
   },
   "devDependencies": {

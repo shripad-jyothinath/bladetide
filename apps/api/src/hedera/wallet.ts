@@ -1,6 +1,6 @@
 /**
  * Wallet linking by proof of ownership. Two methods:
- *  - transfer: user sends 1 tinybar to the operator with `fishio:<nonce>` memo;
+ *  - transfer: user sends 1 tinybar to the operator with `bladetide:<nonce>` memo;
  *    the server verifies via Mirror Node. Works with any Hedera wallet
  *    (HashPack/Blade/...) without SDK integration.
  *  - signature: user signs the challenge message (for future WalletConnect use);
@@ -118,10 +118,10 @@ export class WalletService {
 
   createChallenge(userId: string, accountId?: string): WalletChallenge {
     const nonce = randomBytes(8).toString('hex');
-    const memo = `fishio:${nonce}`;
+    const memo = `bladetide:${nonce}`;
     const cleanAccount = accountId && isValidHederaAccountId(accountId) ? stripChecksum(accountId) : '';
     const message = [
-      'Fish.IO wallet link',
+      'Bladetide wallet link',
       `network: ${this.settings.network}`,
       `account: ${cleanAccount || '(your account)'}`,
       `nonce: ${nonce}`,
@@ -160,11 +160,13 @@ export class WalletService {
     if (!challenge || challenge.user_id !== userId) {
       throw new WalletLinkError('unknown_nonce', 'Unknown challenge. Start over.');
     }
-    const memoNeedle = `fishio:${nonce}`;
+    // Accept the pre-rename memo prefix too, so challenges created before an
+    // upgrade can still be completed.
+    const memoNeedles = [`bladetide:${nonce}`, `fishio:${nonce}`];
     const transactions = await this.mirror.recentTransactions(accountId, 25);
     const match = transactions.find((tx) => {
       const memo = decodeMemo(tx);
-      if (!memo.includes(memoNeedle)) return false;
+      if (!memoNeedles.some((needle) => memo.includes(needle))) return false;
       return (tx.transfers ?? []).some((t) => t.account === this.settings.operatorId && t.amount > 0);
     });
     if (!match) {

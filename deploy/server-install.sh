@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Fish.IO server installer — run ON THE VPS as root.
+# Bladetide server installer — run ON THE VPS as root.
 #
-# Assumes the repository tree has been unpacked at /opt/fishio/app
+# Assumes the repository tree has been unpacked at /opt/bladetide/app
 # (see deploy/README.md). Idempotent: safe to re-run for updates.
 #
 # It does NOT touch existing services or the existing Caddy sites.
 set -euo pipefail
 
-APP_DIR="${FISHIO_APP_DIR:-/opt/fishio/app}"
-APP_USER="${FISHIO_USER:-fishio}"
-ROOT_DIR="${FISHIO_ROOT_DIR:-/opt/fishio}"
+APP_DIR="${BLADETIDE_APP_DIR:-/opt/bladetide/app}"
+APP_USER="${BLADETIDE_USER:-bladetide}"
+ROOT_DIR="${BLADETIDE_ROOT_DIR:-/opt/bladetide}"
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "error: run as root" >&2
@@ -20,17 +20,17 @@ if [ ! -d "$APP_DIR/apps/api" ]; then
   exit 1
 fi
 
-# --- Node runtime: use system node >= 20, otherwise install a private Node 22 ---
+# --- Node runtime: use system node >= 22, otherwise install a private Node 22 ---
 ensure_node() {
   if command -v node >/dev/null 2>&1; then
     local major
     major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
-    if [ "$major" -ge 20 ]; then
+    if [ "$major" -ge 22 ]; then
       return 0
     fi
-    echo "[fishio] system node is too old ($(node -v)) — installing private Node 22 under $ROOT_DIR/node"
+    echo "[bladetide] system node is too old ($(node -v)) — installing private Node 22 under $ROOT_DIR/node"
   else
-    echo "[fishio] node not found — installing private Node 22 under $ROOT_DIR/node"
+    echo "[bladetide] node not found — installing private Node 22 under $ROOT_DIR/node"
   fi
 
   local arch node_arch listing url tmp
@@ -60,21 +60,21 @@ ensure_node() {
   mkdir -p "$ROOT_DIR/node"
   cp -a "$tmp/${url%.tar.xz}/." "$ROOT_DIR/node/"
   rm -rf "$tmp"
-  echo "[fishio] installed $("$ROOT_DIR/node/bin/node" -v) at $ROOT_DIR/node"
+  echo "[bladetide] installed $("$ROOT_DIR/node/bin/node" -v) at $ROOT_DIR/node"
 }
 ensure_node
 export PATH="$ROOT_DIR/node/bin:$PATH"
 
 NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
-if [ "$NODE_MAJOR" -lt 20 ]; then
-  echo "error: Node >= 20 required (found $(node -v))" >&2
+if [ "$NODE_MAJOR" -lt 22 ]; then
+  echo "error: Node >= 22 required (found $(node -v))" >&2
   exit 1
 fi
 
 # Dedicated unprivileged user (no login shell).
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   useradd --system --create-home --shell /usr/sbin/nologin "$APP_USER"
-  echo "[fishio] created system user $APP_USER"
+  echo "[bladetide] created system user $APP_USER"
 fi
 
 mkdir -p "$APP_DIR/apps/api/data" "$ROOT_DIR/tmp"
@@ -88,9 +88,9 @@ for f in apps/api/.env apps/room-server/.env; do
       cp "$APP_DIR/$f.production.example" "$APP_DIR/$f"
       chown "$APP_USER:$APP_USER" "$APP_DIR/$f"
       chmod 600 "$APP_DIR/$f"
-      echo "[fishio] created $APP_DIR/$f from template — REVIEW IT (ports, WEB_ORIGIN, secrets)"
+      echo "[bladetide] created $APP_DIR/$f from template — REVIEW IT (ports, WEB_ORIGIN, secrets)"
     else
-      echo "[fishio] WARNING: $APP_DIR/$f is missing (no template to copy)"
+      echo "[bladetide] WARNING: $APP_DIR/$f is missing (no template to copy)"
     fi
   fi
 done
@@ -112,14 +112,14 @@ if grep -q '^INTERNAL_HMAC_SECRET=replace-with-a-long-random-value' "$APP_DIR/ap
     SECRET="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
   fi
   sed -i "s|^INTERNAL_HMAC_SECRET=.*|INTERNAL_HMAC_SECRET=${SECRET}|" "$APP_DIR/apps/api/.env"
-  echo "[fishio] generated INTERNAL_HMAC_SECRET"
+  echo "[bladetide] generated INTERNAL_HMAC_SECRET"
 fi
 
 # systemd units.
-install -m 644 "$APP_DIR/deploy/systemd/fishio-api.service" /etc/systemd/system/fishio-api.service
-install -m 644 "$APP_DIR/deploy/systemd/fishio-room.service" /etc/systemd/system/fishio-room.service
+install -m 644 "$APP_DIR/deploy/systemd/bladetide-api.service" /etc/systemd/system/bladetide-api.service
+install -m 644 "$APP_DIR/deploy/systemd/bladetide-room.service" /etc/systemd/system/bladetide-room.service
 systemctl daemon-reload
-systemctl enable --now fishio-api.service fishio-room.service
+systemctl enable --now bladetide-api.service bladetide-room.service
 sleep 2
 
 API_PORT="$(sed -n 's/^PORT=//p' "$APP_DIR/apps/api/.env" 2>/dev/null | tail -1)"
@@ -127,14 +127,14 @@ ROOM_PORT="$(sed -n 's/^ROOM_PORT=//p' "$APP_DIR/apps/room-server/.env" 2>/dev/n
 API_PORT="${API_PORT:-18080}"
 ROOM_PORT="${ROOM_PORT:-18787}"
 
-echo "[fishio] service status:"
-systemctl --no-pager --lines=0 status fishio-api fishio-room || true
-echo "[fishio] health checks:"
-curl -fsS "http://127.0.0.1:${API_PORT}/healthz" || echo "  API not responding yet — inspect: journalctl -u fishio-api -n 50"
+echo "[bladetide] service status:"
+systemctl --no-pager --lines=0 status bladetide-api bladetide-room || true
+echo "[bladetide] health checks:"
+curl -fsS "http://127.0.0.1:${API_PORT}/healthz" || echo "  API not responding yet — inspect: journalctl -u bladetide-api -n 50"
 echo
-curl -fsS "http://127.0.0.1:${ROOM_PORT}/healthz" || echo "  room not responding yet — inspect: journalctl -u fishio-room -n 50"
+curl -fsS "http://127.0.0.1:${ROOM_PORT}/healthz" || echo "  room not responding yet — inspect: journalctl -u bladetide-room -n 50"
 echo
-echo "[fishio] done. To expose through the existing Caddy (do NOT edit existing site blocks):"
-echo "  cp $APP_DIR/deploy/Caddyfile.fishio /etc/caddy/conf.d/fishio.caddy   # adjust path to your Caddy conf.d"
+echo "[bladetide] done. To expose through the existing Caddy (do NOT edit existing site blocks):"
+echo "  cp $APP_DIR/deploy/Caddyfile.bladetide /etc/caddy/conf.d/bladetide.caddy   # adjust path to your Caddy conf.d"
 echo "  # edit domains inside, then:"
 echo "  caddy validate --config /etc/caddy/Caddyfile && systemctl reload caddy"

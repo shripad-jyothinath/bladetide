@@ -1,6 +1,6 @@
-# Fish.IO — database schema v1
-# Apply with: psql "$DATABASE_URL" -f apps/api/db/schema.sql
-# Local dev:  docker compose up -d   (auto-applied via docker-entrypoint-initdb.d)
+-- Bladetide — database schema v1
+-- Apply with: psql "$DATABASE_URL" -f apps/api/db/schema.sql
+-- Local dev:  docker compose up -d   (auto-applied via docker-entrypoint-initdb.d)
 
 create extension if not exists citext;
 

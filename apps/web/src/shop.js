@@ -1,5 +1,5 @@
 /**
- * Fish IO - Complete Shop, Species, Weapons, Hats, Maps, Level Challenges & Upgrades
+ * Bladetide - Complete Shop, Species, Weapons, Hats, Maps, Level Challenges & Upgrades
  */
 const FISH_MAPS = {
     coral_reef: {
@@ -985,7 +985,8 @@ class ShopManager {
 
     loadSaveData() {
         try {
-            const data = JSON.parse(localStorage.getItem('fishio_savedata_v4') || '{}');
+            const raw = localStorage.getItem('bladetide_savedata_v4') || localStorage.getItem('fishio_savedata_v4');
+            const data = JSON.parse(raw || '{}');
             if (data.gold !== undefined) this.gold = data.gold;
             if (data.selectedFish && FISH_SKINS[data.selectedFish]) this.selectedFish = data.selectedFish;
             if (data.selectedWeapon && WEAPON_SKINS[data.selectedWeapon]) this.selectedWeapon = data.selectedWeapon;
@@ -1042,7 +1043,8 @@ class ShopManager {
                 lastWheelSpinDay: this.lastWheelSpinDay,
                 savedAt: Date.now()
             };
-            localStorage.setItem('fishio_savedata_v4', JSON.stringify(data));
+            localStorage.setItem('bladetide_savedata_v4', JSON.stringify(data));
+            localStorage.removeItem('fishio_savedata_v4');
         } catch (e) {
             console.warn('Save error', e);
         }

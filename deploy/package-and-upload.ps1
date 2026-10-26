@@ -1,4 +1,4 @@
-# Fish.IO — build a deploy tarball and install it on the VPS.
+# Bladetide — build a deploy tarball and install it on the VPS.
 #
 # Usage (from a machine that can reach the server over SSH):
 #   pwsh deploy/package-and-upload.ps1 -Server 69.62.81.172
@@ -10,15 +10,15 @@ param(
     [Parameter(Mandatory = $true)][string]$Server,
     [int]$Port = 22,
     [string]$User = 'root',
-    [string]$RemoteDir = '/opt/fishio/app',
+    [string]$RemoteDir = '/opt/bladetide/app',
     [switch]$SkipUpload
 )
 
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$tarball = Join-Path $env:TEMP 'fishio-deploy.tgz'
+$tarball = Join-Path $env:TEMP 'bladetide-deploy.tgz'
 
-Write-Host "[fishio] packaging $repo ..."
+Write-Host "[bladetide] packaging $repo ..."
 Push-Location $repo
 try {
     tar -czf $tarball `
@@ -40,18 +40,18 @@ finally {
 }
 
 $size = [math]::Round((Get-Item $tarball).Length / 1MB, 2)
-Write-Host "[fishio] tarball: $tarball ($size MB)"
-if ($SkipUpload) { Write-Host '[fishio] -SkipUpload set; done.'; exit 0 }
+Write-Host "[bladetide] tarball: $tarball ($size MB)"
+if ($SkipUpload) { Write-Host '[bladetide] -SkipUpload set; done.'; exit 0 }
 
-Write-Host "[fishio] uploading to ${User}@${Server}:${Port} ..."
-scp -P $Port $tarball "${User}@${Server}:/tmp/fishio-deploy.tgz"
+Write-Host "[bladetide] uploading to ${User}@${Server}:${Port} ..."
+scp -P $Port $tarball "${User}@${Server}:/tmp/bladetide-deploy.tgz"
 if ($LASTEXITCODE -ne 0) { throw 'scp failed' }
 
 $remote = @"
 set -e
 mkdir -p '$RemoteDir'
-tar -xzf /tmp/fishio-deploy.tgz -C '$RemoteDir'
-rm -f /tmp/fishio-deploy.tgz
+tar -xzf /tmp/bladetide-deploy.tgz -C '$RemoteDir'
+rm -f /tmp/bladetide-deploy.tgz
 bash '$RemoteDir/deploy/server-install.sh'
 "@
 
@@ -59,7 +59,7 @@ ssh -p $Port "${User}@${Server}" $remote
 if ($LASTEXITCODE -ne 0) { throw 'remote install failed' }
 
 Write-Host ''
-Write-Host '[fishio] deployed. Remaining manual steps (see deploy/README.md):'
-Write-Host '  1. Review /opt/fishio/app/apps/api/.env and apps/room-server/.env (secrets, WEB_ORIGIN).'
-Write-Host '  2. Add deploy/Caddyfile.fishio to the existing Caddy conf.d, then reload Caddy.'
+Write-Host '[bladetide] deployed. Remaining manual steps (see deploy/README.md):'
+Write-Host '  1. Review /opt/bladetide/app/apps/api/.env and apps/room-server/.env (secrets, WEB_ORIGIN).'
+Write-Host '  2. Add deploy/Caddyfile.bladetide to the existing Caddy conf.d, then reload Caddy.'
 Write-Host '  3. Point the Vercel frontend at https://api.<domain> and wss://room.<domain>.'

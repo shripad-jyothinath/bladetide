@@ -347,7 +347,7 @@ test('deaths post signed, server-authored results and relay the receipt', async 
     let data = '';
     req.on('data', (chunk) => (data += chunk));
     req.on('end', () => {
-      received.push({ body: data, signature: String(req.headers['x-fishio-signature'] ?? '') });
+      received.push({ body: data, signature: String(req.headers['x-bladetide-signature'] ?? '') });
       res.writeHead(201, { 'content-type': 'application/json' });
       res.end(
         JSON.stringify({

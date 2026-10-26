@@ -15,12 +15,12 @@ import { buildServer } from '../src/index.ts';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function tempDb(): string {
-  return path.join(os.tmpdir(), `fishio-auth-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
+  return path.join(os.tmpdir(), `bladetide-auth-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
 }
 
 test('register issues a 30-day session cookie', async () => {
   const dbPath = tempDb();
-  const app = buildServer(loadConfig({ FISHIO_DB_PATH: dbPath, NODE_ENV: 'test' }));
+  const app = buildServer(loadConfig({ BLADETIDE_DB_PATH: dbPath, NODE_ENV: 'test' }));
   try {
     const reg = await app.inject({
       method: 'POST',
@@ -28,10 +28,35 @@ test('register issues a 30-day session cookie', async () => {
       payload: { email: 'session1@example.com', username: 'session1', password: 'CheckPass123' },
     });
     assert.equal(reg.statusCode, 201);
-    const cookie = reg.cookies.find((c) => c.name === 'fishio_session');
+    const cookie = reg.cookies.find((c) => c.name === 'bladetide_session');
     assert.ok(cookie, 'session cookie set');
     assert.equal(cookie.maxAge, SESSION_TTL_MS / 1000, '30-day max-age');
     assert.equal(cookie.httpOnly, true);
+  } finally {
+    await app.close();
+    fs.rmSync(dbPath, { force: true });
+  }
+});
+
+test('legacy session cookies keep working after the rename', async () => {
+  const dbPath = tempDb();
+  const app = buildServer(loadConfig({ BLADETIDE_DB_PATH: dbPath, NODE_ENV: 'test' }));
+  try {
+    const reg = await app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/register',
+      payload: { email: 'legacy@example.com', username: 'legacy', password: 'CheckPass123' },
+    });
+    const cookie = reg.cookies.find((c) => c.name === 'bladetide_session');
+    assert.ok(cookie);
+
+    const me = await app.inject({
+      method: 'GET',
+      url: '/api/v1/auth/me',
+      cookies: { fishio_session: cookie.value },
+    });
+    assert.equal(me.statusCode, 200, 'pre-rename cookie is accepted');
+    assert.equal(me.json().user.username, 'legacy');
   } finally {
     await app.close();
     fs.rmSync(dbPath, { force: true });
@@ -56,11 +81,11 @@ test('sessions slide forward on use (come back within 30 days = stay signed in)'
   seed.createSession(sha256(token), 'u1', seededAt, seededAt + SESSION_TTL_MS);
   seed.close();
 
-  const app = buildServer(loadConfig({ FISHIO_DB_PATH: dbPath, NODE_ENV: 'test' }));
+  const app = buildServer(loadConfig({ BLADETIDE_DB_PATH: dbPath, NODE_ENV: 'test' }));
   try {
-    const me = await app.inject({ method: 'GET', url: '/api/v1/auth/me', cookies: { fishio_session: token } });
+    const me = await app.inject({ method: 'GET', url: '/api/v1/auth/me', cookies: { bladetide_session: token } });
     assert.equal(me.statusCode, 200);
-    const cookie = me.cookies.find((c) => c.name === 'fishio_session');
+    const cookie = me.cookies.find((c) => c.name === 'bladetide_session');
     assert.ok(cookie, 'cookie refreshed on use');
     assert.equal(cookie.maxAge, SESSION_TTL_MS / 1000, 'fresh 30-day cookie');
   } finally {
@@ -92,9 +117,9 @@ test('expired sessions are rejected and cleaned up', async () => {
   seed.createSession(sha256(token), 'u2', 1, Date.now() - 1000); // already expired
   seed.close();
 
-  const app = buildServer(loadConfig({ FISHIO_DB_PATH: dbPath, NODE_ENV: 'test' }));
+  const app = buildServer(loadConfig({ BLADETIDE_DB_PATH: dbPath, NODE_ENV: 'test' }));
   try {
-    const me = await app.inject({ method: 'GET', url: '/api/v1/auth/me', cookies: { fishio_session: token } });
+    const me = await app.inject({ method: 'GET', url: '/api/v1/auth/me', cookies: { bladetide_session: token } });
     assert.equal(me.statusCode, 401);
   } finally {
     await app.close();

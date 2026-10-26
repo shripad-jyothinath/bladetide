@@ -1,5 +1,5 @@
 /**
- * Fish IO - Particle Systems & Visual Effects Engine
+ * Bladetide - Particle Systems & Visual Effects Engine
  */
 class ParticleSystem {
     constructor() {

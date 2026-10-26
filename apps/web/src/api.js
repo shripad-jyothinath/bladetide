@@ -1,5 +1,5 @@
 /**
- * Fish.IO — website client layer.
+ * Bladetide — website client layer.
  *
  * - Email/password session + cross-device save sync (accounts API)
  * - Match bridge: finished games are recorded and attested on Hedera (HCS)
@@ -12,7 +12,8 @@
 (function () {
     'use strict';
 
-    const SAVE_KEY = 'fishio_savedata_v4';
+    const SAVE_KEY = 'bladetide_savedata_v4';
+    const LEGACY_SAVE_KEY = 'fishio_savedata_v4';
     const SYNC_DEBOUNCE_MS = 1500;
 
     let currentUser = null;
@@ -24,7 +25,7 @@
     // ===== tiny API helper =====
     // Absolute API base for split deployments (game on Vercel, API on the VPS).
     // Empty string = same-origin (local dev / all-in-one hosting).
-    const API_BASE = String(window.FISHIO_API_BASE || '').replace(/\/+$/, '');
+    const API_BASE = String(window.BLADETIDE_API_BASE || window.FISHIO_API_BASE || '').replace(/\/+$/, '');
 
     async function request(path, { method = 'GET', body } = {}) {
         let res;
@@ -84,7 +85,15 @@
     let saveSyncReady = false;
 
     function readLocalSave() {
-        try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return null; }
+        try {
+            const raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem(LEGACY_SAVE_KEY);
+            if (!raw) return null;
+            const save = JSON.parse(raw);
+            // One-time migration for players who started before the rename.
+            if (!localStorage.getItem(SAVE_KEY)) localStorage.setItem(SAVE_KEY, raw);
+            localStorage.removeItem(LEGACY_SAVE_KEY);
+            return save;
+        } catch { return null; }
     }
 
     function isFreshDefaultSave(save) {
@@ -156,14 +165,14 @@
 
     function hookShopSave() {
         const sm = window.shopManager;
-        if (!sm || sm.__fishioSynced) return;
+        if (!sm || sm.__bladetideSynced) return;
         const original = sm.save.bind(sm);
         sm.save = function () {
             const result = original();
             scheduleSaveSync();
             return result;
         };
-        sm.__fishioSynced = true;
+        sm.__bladetideSynced = true;
     }
 
     // ===== account bar =====
@@ -628,7 +637,7 @@
             showToast('Minting on Hedera…');
             const result = await request('/api/v1/hedera/nfts/mint', {
                 method: 'POST',
-                body: { itemId: id, itemType: type, name: item ? item.name : id, description: item ? `${item.name} — Fish.IO ${type}` : '' },
+                body: { itemId: id, itemType: type, name: item ? item.name : id, description: item ? `${item.name} — Bladetide ${type}` : '' },
             });
             const link = result.item.hashscanUrl ? ` — <a href="${escapeHtml(result.item.hashscanUrl)}" target="_blank" rel="noopener">view NFT</a>` : '';
             showToast(`Minted ${result.item.name} #${result.item.serial}`);

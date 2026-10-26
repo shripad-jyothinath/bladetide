@@ -5,7 +5,7 @@
  *   npm run hedera:wallet
  *
  * Also send the wallet-link proof from an existing key (support / re-link):
- *   npm run hedera:wallet -- --from-key 303... --from-account 0.0.x --memo "fishio:<nonce>"
+ *   npm run hedera:wallet -- --from-key 303... --from-account 0.0.x --memo "bladetide:<nonce>"
  *
  * Prints account id / proof tx so they can be imported into HashPack / Blade.
  * Testnet only — never use for real funds.
@@ -35,7 +35,7 @@ async function sendProof(
   key: PrivateKey,
 ): Promise<void> {
   if (!memo) {
-    console.error('Sending a proof requires --memo "fishio:<nonce>"');
+    console.error('Sending a proof requires --memo "bladetide:<nonce>"');
     process.exit(1);
   }
   console.log(`\nSending the 1-tinybar link proof with memo "${memo}"...`);
@@ -73,7 +73,7 @@ async function main(): Promise<void> {
   const createTx = await new AccountCreateTransaction()
     .setKeyWithoutAlias(key.publicKey)
     .setInitialBalance(new Hbar(Number.isFinite(initialHbar) && initialHbar > 0 ? initialHbar : 25))
-    .setAccountMemo('Fish.IO player wallet')
+    .setAccountMemo('Bladetide player wallet')
     .execute(hedera.client);
   const receipt = await createTx.getReceipt(hedera.client);
   const accountId = receipt.accountId?.toString();

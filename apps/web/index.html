@@ -7,8 +7,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#062a52">
-    <title>Fish IO: Be The King - Free Online Underwater .IO Game</title>
-    <meta name="description" content="Play Fish IO: Be The King! Eat smaller fish & sushi, slice enemies with your blade, grow into a giant apex predator, and rule the ocean with the golden crown.">
+    <title>Bladetide — Free Multiplayer Fish-Slicing .io Game</title>
+    <meta name="description" content="Play Bladetide, a free browser .io game. Slice rivals with your blade, eat sushi, grow into an apex predator, and rule the reef in server-authoritative multiplayer.">
+    <meta name="author" content="Shripad Jyothinath">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Bladetide">
+    <meta property="og:title" content="Bladetide — Slice. Grow. Rule the reef.">
+    <meta property="og:description" content="A free browser .io arena with server-authoritative multiplayer, cross-device progression, and optional Hedera rewards.">
+    <meta property="og:image" content="https://fish-game-rouge.vercel.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Bladetide — Slice. Grow. Rule the reef.">
+    <meta name="twitter:description" content="A free browser .io arena with server-authoritative multiplayer, cross-device progression, and optional Hedera rewards.">
+    <meta name="twitter:image" content="https://fish-game-rouge.vercel.app/og-image.png">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -73,8 +84,8 @@
                 <!-- CENTER: PLAY & CUSTOMIZATION -->
                 <div class="menu-card">
                     <div class="logo-container">
-                        <h1 class="game-title">FISH.IO</h1>
-                        <div class="game-subtitle">👑 BE THE KING 👑</div>
+                        <h1 class="game-title">BLADETIDE</h1>
+                        <div class="game-subtitle">SLICE. GROW. RULE THE REEF.</div>
                     </div>
 
                     <!-- Live Animated Fish Preview -->
@@ -541,7 +552,7 @@
 
             // First visit: show the mini guide once — but only from the menu.
             // If the player already jumped into a match, queue it for the menu.
-            if (!localStorage.getItem('fishio_guide_seen')) {
+            if (!localStorage.getItem('bladetide_guide_seen') && !localStorage.getItem('fishio_guide_seen')) {
                 setTimeout(() => {
                     if (typeof game !== 'undefined' && game && game.gameState !== 'menu') {
                         guidePending = true;
@@ -1072,7 +1083,7 @@
             updatePreviewFish();
 
             // A first-run guide that was queued while a match was running shows now.
-            if (guidePending && !localStorage.getItem('fishio_guide_seen')) {
+            if (guidePending && !localStorage.getItem('bladetide_guide_seen') && !localStorage.getItem('fishio_guide_seen')) {
                 guidePending = false;
                 openGuide();
             }
@@ -1479,7 +1490,10 @@
                 game.resumeGame();
             }
 
-            try { localStorage.setItem('fishio_guide_seen', '1'); } catch (e) { /* private mode */ }
+            try {
+                localStorage.setItem('bladetide_guide_seen', '1');
+                localStorage.removeItem('fishio_guide_seen');
+            } catch (e) { /* private mode */ }
         }
         window.addEventListener('keydown', (e) => {
             const modal = document.getElementById('guideModal');
@@ -1493,7 +1507,8 @@
         // desktop-sized (streamed/remote viewing on a phone). Auto-on for coarse
         // pointers / <= 820px; otherwise the 📱 toggle controls it (remembered).
         (function () {
-            const KEY = 'fishio_compact_ui';
+            const KEY = 'bladetide_compact_ui';
+            const LEGACY_KEY = 'fishio_compact_ui';
             const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
             const autoOn = () => coarse || window.innerWidth <= 820;
 
@@ -1505,7 +1520,8 @@
                 });
             };
 
-            const saved = localStorage.getItem(KEY);
+            const saved = localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY);
+            if (saved !== null && localStorage.getItem(KEY) === null) localStorage.setItem(KEY, saved);
             apply(saved === null ? autoOn() : saved === '1');
 
             document.querySelectorAll('.compact-toggle').forEach((b) => {

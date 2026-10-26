@@ -27,7 +27,7 @@ export class HcsService {
     if (stored) return stored;
 
     const tx = await new TopicCreateTransaction()
-      .setTopicMemo('Fish.IO match attestations')
+      .setTopicMemo('Bladetide match attestations')
       .execute(this.hedera.client);
     const receipt = await tx.getReceipt(this.hedera.client);
     const topicId = receipt.topicId?.toString();

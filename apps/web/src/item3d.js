@@ -1,5 +1,5 @@
 /**
- * Fish.IO — 3D asset previews (Three.js, vendored in /vendor).
+ * Bladetide — 3D asset previews (Three.js, vendored in /vendor).
  *
  * Procedurally sculpted models for every weapon, fish and hat in the shop:
  * beveled extruded blades, lathe/tube bodies, PBR materials, a small studio

@@ -10,7 +10,7 @@
  *   T0 minutes · T1 hours · T2 days · T3 weeks · T4 months-to-years.
  * Tune the two tables below if the economy should move.
  */
-import { loadGame, type GameCatalog } from '@fishio/game-core';
+import { loadGame, type GameCatalog } from '@bladetide/game-core';
 
 export type GoldShopItemType = 'fish' | 'weapon' | 'hat';
 

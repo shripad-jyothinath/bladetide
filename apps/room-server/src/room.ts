@@ -8,7 +8,7 @@
  *  - Disconnected players keep their fish for a grace period, then are removed.
  */
 import crypto from 'node:crypto';
-import { FRAME_MS, loadGame, type FishHandle, type GameHandle, type GameHarness } from '@fishio/game-core';
+import { FRAME_MS, loadGame, type FishHandle, type GameHandle, type GameHarness } from '@bladetide/game-core';
 import type { RoomServerConfig } from './config.ts';
 import {
   clamp,
@@ -556,8 +556,8 @@ export class Room {
       const res = await fetch(`${apiUrl.replace(/\/+$/, '')}/internal/matches`, {
         method: 'POST',
         headers: {
-          'content-type': 'application/vnd.fishio.intake+json',
-          'x-fishio-signature': signInternalBody(internalHmacSecret, body),
+          'content-type': 'application/vnd.bladetide.intake+json',
+          'x-bladetide-signature': signInternalBody(internalHmacSecret, body),
         },
         body,
         signal: controller.signal,

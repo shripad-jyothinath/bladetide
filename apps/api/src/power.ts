@@ -3,7 +3,7 @@
  * from the player's loadout (weapon + fish tier), workshop levels and their
  * best match level. Recomputed whenever the save or progression changes.
  */
-import { loadGame } from '@fishio/game-core';
+import { loadGame } from '@bladetide/game-core';
 import type { Store } from './db.ts';
 
 const WEAPON_TIER_POWER = [0, 300, 900, 2400, 6000];

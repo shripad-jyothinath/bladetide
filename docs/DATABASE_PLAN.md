@@ -1,4 +1,4 @@
-# Fish.IO — Database & Backend Data Plan
+# Bladetide — Database & Backend Data Plan
 
 > Companion docs: `docs/HEDERA_PLAN.md` (chain integration), `docs/MULTIPLAYER_PLAN.md` (real-time servers).
 >

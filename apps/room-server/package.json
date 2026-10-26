@@ -1,9 +1,9 @@
 {
-  "name": "@fishio/room-server",
+  "name": "@bladetide/room-server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Fish.IO M1 room server: authoritative shared arena over WebSocket.",
+  "description": "Bladetide M1 room server: authoritative shared arena over WebSocket.",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
-    "@fishio/game-core": "*",
+    "@bladetide/game-core": "*",
     "ws": "^8.18.0"
   },
   "devDependencies": {

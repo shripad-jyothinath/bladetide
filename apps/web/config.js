@@ -14,18 +14,24 @@
 
   // Same-origin API through the Vercel proxy (/api/* → VPS API). First-party
   // cookies mean sign-in survives browser restarts and strict privacy settings.
-  window.FISHIO_API_BASE = '';
+  // The FISHIO_* names are accepted as legacy aliases for split deployments
+  // configured before the Bladetide rename.
+  window.BLADETIDE_API_BASE = window.FISHIO_API_BASE || '';
 
   // The arena is a WebSocket on the VPS (Caddy TLS).
-  window.FISHIO_ROOM_URL = 'wss://room.69-62-81-172.sslip.io';
+  window.BLADETIDE_ROOM_URL = window.FISHIO_ROOM_URL || 'wss://room.69-62-81-172.sslip.io';
 
   try {
     var params = new URLSearchParams(window.location.search);
     var api = params.get('api');
     var room = params.get('room');
-    if (api) window.FISHIO_API_BASE = api;
-    if (room) window.FISHIO_ROOM_URL = room;
+    if (api) window.BLADETIDE_API_BASE = api;
+    if (room) window.BLADETIDE_ROOM_URL = room;
   } catch (err) {
     /* URLSearchParams unavailable — ignore */
   }
+
+  // Keep legacy globals in sync for older deployment snippets.
+  window.FISHIO_API_BASE = window.BLADETIDE_API_BASE;
+  window.FISHIO_ROOM_URL = window.BLADETIDE_ROOM_URL;
 })();

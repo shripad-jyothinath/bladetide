@@ -1,4 +1,4 @@
-# Fish.IO × Hedera — Project Plan
+# Bladetide × Hedera — Project Plan
 
 > Turning the browser game in this repo into a real project with wallets, on-chain rewards,
 > NFT cosmetics, and verifiable leaderboards/tournaments on the Hedera network.
@@ -60,7 +60,7 @@ Non-goals for v1: real-money cash-out, gambling mechanics, a token sale, cross-c
   2. *On-chain claim contract* — backend signs EIP-712-style vouchers, player redeems; no treasury key on hot server.
 - Anti-farming: per-account daily caps, cooldowns, statistical validation of submitted scores.
 
-### Phase C — NFT collection "Fish.IO Originals"
+### Phase C — NFT collection "Bladetide Originals"
 - One HTS NFT collection (or one per category: Fish / Weapons / Hats).
 - HIP-412 metadata JSON; art on IPFS or Hedera File Service.
 - Existing shop items become mintable NFTs; equipping = game reads owner inventory (Mirror Node + DB cache).
@@ -117,7 +117,7 @@ become verifiable records of correctly simulated matches.
 ## 5. Proposed repo layout (monorepo)
 
 ```
-fish-0/
+bladetide/
 ├─ apps/
 │  ├─ web/                 # the game (migrated to Vite for npm deps)
 │  │  ├─ index.html, style.css

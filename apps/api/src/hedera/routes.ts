@@ -151,7 +151,7 @@ function renderItemSvg(itemId: string, label: string, category: string, serial: 
 <circle cx="256" cy="220" r="118" fill="rgba(255,255,255,0.12)"/>
 <text x="256" y="258" font-family="Segoe UI, sans-serif" font-size="120" font-weight="800" fill="#fff" text-anchor="middle">${safeLabel.charAt(0).toUpperCase()}</text>
 <text x="256" y="380" font-family="Segoe UI, sans-serif" font-size="38" font-weight="700" fill="rgba(255,255,255,0.92)" text-anchor="middle">${safeLabel}</text>
-<text x="256" y="428" font-family="Segoe UI, sans-serif" font-size="24" font-weight="600" fill="rgba(255,255,255,0.6)" text-anchor="middle">${safeCategory} · Fish.IO</text>
+<text x="256" y="428" font-family="Segoe UI, sans-serif" font-size="24" font-weight="600" fill="rgba(255,255,255,0.6)" text-anchor="middle">${safeCategory} · Bladetide</text>
 ${editionLine}
 </svg>`;
 }
@@ -570,16 +570,18 @@ export function registerHederaRoutes(
   // The room server posts finished online matches here. A dedicated raw content
   // type means the HMAC signature covers the exact bytes that were sent, with no
   // re-serialization differences.
-  app.addContentTypeParser('application/vnd.fishio.intake+json', { parseAs: 'string' }, (_req, body, done) => {
-    done(null, body);
-  });
+  for (const contentType of ['application/vnd.bladetide.intake+json', 'application/vnd.fishio.intake+json']) {
+    app.addContentTypeParser(contentType, { parseAs: 'string' }, (_req, body, done) => {
+      done(null, body);
+    });
+  }
 
   app.post('/internal/matches', async (req, reply) => {
     const secret = internal.hmacSecret;
     if (!secret) return reply.code(503).send(errorBody('intake_disabled', 'Match intake is not configured.'));
 
     const rawBody = typeof req.body === 'string' ? req.body : '';
-    const signature = req.headers['x-fishio-signature'];
+    const signature = req.headers['x-bladetide-signature'] ?? req.headers['x-fishio-signature'];
     if (!rawBody || !verifyInternalBody(secret, rawBody, signature)) {
       return reply.code(401).send(errorBody('bad_signature', 'Invalid signature.'));
     }
@@ -822,10 +824,10 @@ export function registerHederaRoutes(
       const minted = await services.nft.mintItem({ itemId, itemType, toAccountId: link.accountId });
       const metadata: Record<string, unknown> = {
         name,
-        description: description || `${itemType} cosmetic from Fish.IO`,
+        description: description || `${itemType} cosmetic from Bladetide`,
         image: services.nft.imageUri(itemId, minted.serial),
         type: 'image/svg+xml',
-        creator: 'Fish.IO',
+        creator: 'Bladetide',
         attributes: [
           { trait_type: 'category', value: itemType },
           { trait_type: 'game', value: 'fish.io' },

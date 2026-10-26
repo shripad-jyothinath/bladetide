@@ -11,7 +11,7 @@
 # fresh WALLET_ENCRYPTION_KEY if one is missing. Never touches other settings.
 set -euo pipefail
 
-APP_DIR="${FISHIO_APP_DIR:-/opt/fishio/app}"
+APP_DIR="${BLADETIDE_APP_DIR:-/opt/bladetide/app}"
 ENV_FILE="$APP_DIR/apps/api/.env"
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -19,7 +19,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 if [ ! -f "$ENV_FILE" ]; then
-  echo "error: $ENV_FILE not found (is Fish.IO installed?)" >&2
+  echo "error: $ENV_FILE not found (is Bladetide installed?)" >&2
   exit 1
 fi
 
@@ -51,7 +51,7 @@ fi
 
 BACKUP="$ENV_FILE.bak.$(date +%s)"
 cp -a "$ENV_FILE" "$BACKUP"
-echo "[fishio] env backup: $BACKUP"
+echo "[bladetide] env backup: $BACKUP"
 
 sed -i '/^HEDERA_NETWORK=/d;/^HEDERA_OPERATOR_ID=/d;/^HEDERA_OPERATOR_KEY=/d' "$ENV_FILE"
 {
@@ -66,20 +66,20 @@ if ! grep -q '^WALLET_ENCRYPTION_KEY=' "$ENV_FILE"; then
   else
     echo "WALLET_ENCRYPTION_KEY=$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')" >> "$ENV_FILE"
   fi
-  echo "[fishio] generated WALLET_ENCRYPTION_KEY"
+  echo "[bladetide] generated WALLET_ENCRYPTION_KEY"
 fi
 
 chmod 600 "$ENV_FILE"
-chown fishio:fishio "$ENV_FILE" 2>/dev/null || true
+chown bladetide:bladetide "$ENV_FILE" 2>/dev/null || true
 
 # Provision topic / $GOLD / NFT collection and write their IDs back into .env.
 cd "$APP_DIR"
-echo "[fishio] provisioning HCS topic, \$GOLD token and NFT collection..."
-npm --workspace @fishio/api run hedera:setup -- --write-env
+echo "[bladetide] provisioning HCS topic, \$GOLD token and NFT collection..."
+npm --workspace @bladetide/api run hedera:setup -- --write-env
 
-systemctl restart fishio-api
+systemctl restart bladetide-api
 sleep 2
-echo "[fishio] API status:"
+echo "[bladetide] API status:"
 curl -fsS http://127.0.0.1:18080/api/v1/status || true
 echo
-echo "[fishio] done. Verify externally: curl -s https://api.<domain>/api/v1/status"
+echo "[bladetide] done. Verify externally: curl -s https://api.<domain>/api/v1/status"

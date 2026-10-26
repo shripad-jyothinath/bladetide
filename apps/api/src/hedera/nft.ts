@@ -1,5 +1,5 @@
 /**
- * "Fish.IO Originals" — HTS NFT collection for cosmetics and achievements.
+ * "Bladetide Originals" — HTS NFT collection for cosmetics and achievements.
  * Metadata follows the HIP-412 shape; the URI points at this API so
  * explorers can resolve the JSON (needs PUBLIC_BASE_URL to be reachable).
  */
@@ -44,8 +44,8 @@ export class NftService {
     if (stored) return stored;
 
     const tx = await new TokenCreateTransaction()
-      .setTokenName('Fish.IO Originals')
-      .setTokenSymbol('FISHIO')
+      .setTokenName('Bladetide Originals')
+      .setTokenSymbol('BLADETIDE')
       .setTokenType(TokenType.NonFungibleUnique)
       .setDecimals(0)
       .setInitialSupply(0)
@@ -59,7 +59,7 @@ export class NftService {
     const receipt = await tx.getReceipt(this.hedera.client);
     const tokenId = receipt.tokenId?.toString();
     if (!tokenId) throw new Error('NFT collection creation returned no token id');
-    this.store.setHederaResource(this.settings.network, 'nft_collection', tokenId, { name: 'Fish.IO Originals' });
+    this.store.setHederaResource(this.settings.network, 'nft_collection', tokenId, { name: 'Bladetide Originals' });
     return tokenId;
   }
 

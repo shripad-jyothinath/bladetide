@@ -1,0 +1,53 @@
+name: Feature request
+description: Suggest a gameplay, technical or documentation improvement.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Please describe the problem first, then the proposed solution.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What is missing, frustrating, or worth improving?
+      placeholder: New players cannot tell which weapon tier is appropriate for stage 7.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: Show the recommended tier next to each stage and explain the trade-off.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches, existing games that solve this well, or reasons to keep it simple.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Gameplay / client
+        - Online multiplayer
+        - Accounts / saves
+        - Economy / shop
+        - Hedera integration
+        - Deployment / infrastructure
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: This request is compatible with the project's alpha / testnet scope.
+          required: true

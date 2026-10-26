@@ -9,7 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { loadGame } from '@fishio/game-core';
+import { loadGame } from '@bladetide/game-core';
 import { loadHederaSettings, type HederaSettings } from '../src/hedera/config.ts';
 import { decryptSecret, encryptSecret, type CustodyService } from '../src/hedera/custody.ts';
 import { openDatabase, type NftItemRow } from '../src/db.ts';
@@ -32,7 +32,7 @@ const settings: HederaSettings = {
   topicId: '',
   goldTokenId: '',
   nftCollectionId: '',
-  goldName: 'Fish.IO Gold',
+  goldName: 'Bladetide Gold',
   goldSymbol: 'GOLD',
   goldDecimals: 2,
   goldInitialSupply: 1000,
@@ -45,7 +45,7 @@ const settings: HederaSettings = {
 };
 
 test('wallet signatures verify and reject tampering', () => {
-  const message = 'Fish.IO wallet link\nnetwork: testnet\nnonce: abc123';
+  const message = 'Bladetide wallet link\nnetwork: testnet\nnonce: abc123';
   for (const key of [PrivateKey.generateED25519(), PrivateKey.generateECDSA()]) {
     const signature = Buffer.from(key.sign(Buffer.from(message, 'utf8'))).toString('base64');
     assert.equal(verifyMessageSignature(key.publicKey.toStringDer(), message, signature), true, 'der key verifies');
@@ -128,12 +128,12 @@ test('gold rewards scale with score, kills and level (uncapped)', () => {
 });
 
 test('env loader reads KEY=VALUE files without overriding existing vars', () => {
-  const tmp = path.join(os.tmpdir(), `fishio-env-test-${Date.now()}.env`);
-  fs.writeFileSync(tmp, 'FISHIO_TEST_A=1\n# comment\nFISHIO_TEST_B="two"\n');
-  process.env.FISHIO_TEST_A = 'keep';
+  const tmp = path.join(os.tmpdir(), `bladetide-env-test-${Date.now()}.env`);
+  fs.writeFileSync(tmp, 'BLADETIDE_TEST_A=1\n# comment\nBLADETIDE_TEST_B="two"\n');
+  process.env.BLADETIDE_TEST_A = 'keep';
   loadDotEnv(tmp);
-  assert.equal(process.env.FISHIO_TEST_A, 'keep', 'existing environment wins');
-  assert.equal(process.env.FISHIO_TEST_B, 'two', 'quotes are stripped');
+  assert.equal(process.env.BLADETIDE_TEST_A, 'keep', 'existing environment wins');
+  assert.equal(process.env.BLADETIDE_TEST_B, 'two', 'quotes are stripped');
   fs.rmSync(tmp, { force: true });
 });
 
@@ -158,9 +158,9 @@ test('settings default to a disabled testnet config without credentials', () => 
 });
 
 test('mirror memo decoding supports both memo and memo_base64', () => {
-  const encoded = Buffer.from('fishio:abc123').toString('base64');
-  assert.equal(decodeMemo({ memo_base64: encoded }), 'fishio:abc123');
-  assert.equal(decodeMemo({ memo: encoded }), 'fishio:abc123');
+  const encoded = Buffer.from('bladetide:abc123').toString('base64');
+  assert.equal(decodeMemo({ memo_base64: encoded }), 'bladetide:abc123');
+  assert.equal(decodeMemo({ memo: encoded }), 'bladetide:abc123');
   assert.equal(decodeMemo({}), '');
 });
 
@@ -549,9 +549,9 @@ test('withdraw moves ledger $GOLD to the wallet and refunds on failure', async (
 });
 
 test('reward endpoints are once-per-day and purchases debit the ledger', async () => {
-  const dbPath = path.join(os.tmpdir(), `fishio-ledger-${Date.now()}.db`);
+  const dbPath = path.join(os.tmpdir(), `bladetide-ledger-${Date.now()}.db`);
   const app = buildServer(
-    loadConfig({ FISHIO_DB_PATH: dbPath, INTERNAL_HMAC_SECRET: 'reward-secret', NODE_ENV: 'test' }),
+    loadConfig({ BLADETIDE_DB_PATH: dbPath, INTERNAL_HMAC_SECRET: 'reward-secret', NODE_ENV: 'test' }),
   );
   try {
     const reg = await app.inject({
@@ -560,9 +560,9 @@ test('reward endpoints are once-per-day and purchases debit the ledger', async (
       payload: { email: 'r1@example.com', username: 'reward1', password: 'CheckPass123' },
     });
     assert.equal(reg.statusCode, 201);
-    const cookie = reg.cookies.find((c) => c.name === 'fishio_session');
+    const cookie = reg.cookies.find((c) => c.name === 'bladetide_session');
     assert.ok(cookie, 'session cookie');
-    const auth = { cookies: { fishio_session: cookie.value } };
+    const auth = { cookies: { bladetide_session: cookie.value } };
 
     const daily1 = await app.inject({ ...auth, method: 'POST', url: '/api/v1/me/reward/daily' });
     assert.equal(daily1.statusCode, 200);
@@ -588,8 +588,8 @@ test('reward endpoints are once-per-day and purchases debit the ledger', async (
       stats: { mode: 'classic', score: 1500, kills: 5, level: 4, durationMs: 1000 },
     });
     const intakeHeaders = (signature: string) => ({
-      'content-type': 'application/vnd.fishio.intake+json',
-      'x-fishio-signature': signature,
+      'content-type': 'application/vnd.bladetide.intake+json',
+      'x-bladetide-signature': signature,
     });
     const intake = await app.inject({
       method: 'POST',
@@ -679,9 +679,9 @@ test('room tickets round-trip and reject tampering/expiry', () => {
 });
 
 test('internal match intake verifies HMAC signatures and records the match', async () => {
-  const tmp = path.join(os.tmpdir(), `fishio-intake-${Date.now()}.db`);
+  const tmp = path.join(os.tmpdir(), `bladetide-intake-${Date.now()}.db`);
   const app = buildServer(
-    loadConfig({ FISHIO_DB_PATH: tmp, INTERNAL_HMAC_SECRET: 'intake-secret', NODE_ENV: 'test' }),
+    loadConfig({ BLADETIDE_DB_PATH: tmp, INTERNAL_HMAC_SECRET: 'intake-secret', NODE_ENV: 'test' }),
   );
   try {
     const reg = await app.inject({
@@ -698,8 +698,8 @@ test('internal match intake verifies HMAC signatures and records the match', asy
     });
 
     const intakeHeaders = (signature: string) => ({
-      'content-type': 'application/vnd.fishio.intake+json',
-      'x-fishio-signature': signature,
+      'content-type': 'application/vnd.bladetide.intake+json',
+      'x-bladetide-signature': signature,
     });
 
     const bad = await app.inject({

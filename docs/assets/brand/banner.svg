@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-label="Bladetide — Slice. Grow. Rule the reef.">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#02101d"/>
+      <stop offset="0.5" stop-color="#052a42"/>
+      <stop offset="1" stop-color="#084d60"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="26%" cy="45%" r="45%">
+      <stop offset="0" stop-color="#22d3e8" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#22d3e8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fish" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1fb6c9"/>
+      <stop offset="0.55" stop-color="#7df9ff"/>
+      <stop offset="1" stop-color="#e2ffff"/>
+    </linearGradient>
+    <linearGradient id="blade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#b9f6ff"/>
+      <stop offset="1" stop-color="#48b7d4"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffe9a3"/>
+      <stop offset="1" stop-color="#ffc233"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="400" fill="url(#bg)"/>
+  <ellipse cx="330" cy="190" rx="360" ry="260" fill="url(#halo)"/>
+
+  <g opacity=".18" fill="#9ff7ff">
+    <path d="M0 54 L1280 0 L1280 26 L0 92 Z"/>
+    <path d="M0 130 L1280 66 L1280 82 L0 156 Z"/>
+    <path d="M0 318 L1280 250 L1280 262 L0 336 Z"/>
+  </g>
+
+  <g opacity=".35" fill="none" stroke="#9ff7ff" stroke-width="1.5">
+    <circle cx="86" cy="88" r="5"/>
+    <circle cx="132" cy="330" r="7"/>
+    <circle cx="232" cy="54" r="3"/>
+    <circle cx="330" cy="330" r="4"/>
+    <circle cx="1180" cy="76" r="5"/>
+    <circle cx="1120" cy="318" r="8"/>
+    <circle cx="1218" cy="210" r="4"/>
+    <circle cx="1020" cy="54" r="3"/>
+  </g>
+
+  <g transform="translate(116 70)">
+    <circle cx="128" cy="128" r="118" fill="none" stroke="#7df9ff" stroke-opacity=".28" stroke-width="2.5"/>
+    <circle cx="128" cy="128" r="96" fill="none" stroke="#7df9ff" stroke-opacity=".12" stroke-width="1.5"/>
+    <g transform="translate(-16 12) scale(.67)">
+      <path d="M151 256 L91 207 L112 256 L91 305 Z" fill="url(#fish)" opacity=".9"/>
+      <path d="M360 256 C328 187 247 164 181 196 C154 209 133 230 117 256 C133 282 154 303 181 316 C247 348 328 325 360 256 Z" fill="url(#fish)"/>
+      <path d="M232 195 C246 160 287 142 323 156 C303 166 291 178 286 194 Z" fill="#7df9ff" opacity=".8"/>
+      <path d="M250 313 C268 343 306 355 340 339 C316 332 298 322 286 306 Z" fill="#1fb6c9" opacity=".75"/>
+      <circle cx="321" cy="237" r="9" fill="#03202e"/>
+      <circle cx="324" cy="234" r="3" fill="#e8ffff"/>
+      <path d="M360 243 L472 217 L448 256 L472 295 L360 269 Z" fill="url(#blade)"/>
+      <path d="M361 252 L441 243 L430 256 L441 269 L361 260 Z" fill="#ffffff" opacity=".65"/>
+    </g>
+  </g>
+
+  <text x="388" y="186" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="94" font-weight="800" letter-spacing="9" fill="#f4feff">BLADETIDE</text>
+  <text x="394" y="243" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="25" font-weight="700" letter-spacing="5.5" fill="url(#gold)">SLICE. GROW. RULE THE REEF.</text>
+  <text x="396" y="300" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="16" font-weight="600" letter-spacing="2.4" fill="#a9dbe7" opacity=".9">SERVER-AUTHORITATIVE MULTIPLAYER · HEDERA-POWERED REWARDS</text>
+
+  <g transform="translate(396 326)">
+    <rect width="196" height="30" rx="15" fill="#7df9ff" fill-opacity=".1" stroke="#7df9ff" stroke-opacity=".28"/>
+    <text x="98" y="20" text-anchor="middle" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="1.6" fill="#bffbff">BROWSER · FREE TO PLAY</text>
+    <rect x="212" width="132" height="30" rx="15" fill="#ffc233" fill-opacity=".1" stroke="#ffc233" stroke-opacity=".3"/>
+    <text x="278" y="20" text-anchor="middle" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="1.6" fill="#ffe9a3">ALPHA · TESTNET</text>
+  </g>
+</svg>

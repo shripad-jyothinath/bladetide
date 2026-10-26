@@ -1,4 +1,6 @@
-# Fish.IO deployment runbook
+# Bladetide deployment runbook
+
+> **Upgrading an existing Fish.IO deployment?** The repository, npm scope and service names changed with the Bladetide rename. GitHub redirects the old repository URL, but the VPS layout does not change by itself. Either deploy fresh into `/opt/bladetide` with the `bladetide-*` systemd units, or keep the old `/opt/fishio` tree and point the new units at it with `BLADETIDE_APP_DIR` / `BLADETIDE_ROOT_DIR`. Update `WEB_ORIGIN`, `ROOM_API_URL` and the Vercel `/api` rewrite to the new hostnames. The API still accepts the old session cookie, intake headers and `FISHIO_DB_PATH`, so existing data keeps working during the transition.
 
 Split deployment:
 
@@ -7,7 +9,7 @@ Split deployment:
    ┌─────────────────────────────┐        ┌──────────────────────────────────────────┐
    │ apps/web (the game)         │        │  api.example.com  → 127.0.0.1:18080 (API)│
    │  + config.js                │──HTTPS─▶  room.example.com → 127.0.0.1:18787 (room)│
-   │  ? room/api URLs            │──WSS───▶  fishio-api.service / fishio-room.service  │
+   │  ? room/api URLs            │──WSS───▶  bladetide-api.service / bladetide-room.service  │
    └─────────────────────────────┘        └──────────────────────────────────────────┘
 ```
 
@@ -44,18 +46,18 @@ pwsh deploy/package-and-upload.ps1 -Server 69.62.81.172 -Port 2222 # custom port
 ```
 
 This tars the repo (no `.env`, no SQLite data, no `node_modules`), uploads to `/tmp`,
-unpacks to `/opt/fishio/app`, then runs `deploy/server-install.sh` which:
+unpacks to `/opt/bladetide/app`, then runs `deploy/server-install.sh` which:
 
-1. creates the unprivileged `fishio` system user + `/opt/fishio`
+1. creates the unprivileged `bladetide` system user + `/opt/bladetide`
 2. installs dependencies (npm workspaces from the repo root)
 3. creates `apps/{api,room-server}/.env` from `*.production.example` on first install
-4. installs and starts `fishio-api.service` + `fishio-room.service`
+4. installs and starts `bladetide-api.service` + `bladetide-room.service`
 5. health-checks `127.0.0.1:18080/healthz` and `127.0.0.1:18787/healthz`
 
 Re-running the script is the update path (same steps, `.env` preserved, services restarted).
 
 > Alternative without SSH from your machine: push the repo to GitHub, then on the server
-> `git clone` into `/opt/fishio/app` and run `bash deploy/server-install.sh`.
+> `git clone` into `/opt/bladetide/app` and run `bash deploy/server-install.sh`.
 
 ### 1b. No SSH? Deploy from the provider's web console
 
@@ -65,28 +67,28 @@ web console still works. Paste this into the console (root shell):
 ```bash
 set -e
 mkdir -p /opt
-if [ ! -d /opt/fishio/app/.git ]; then
-  git clone https://github.com/shripad-jyothinath/fish-game.git /opt/fishio/app
+if [ ! -d /opt/bladetide/app/.git ]; then
+  git clone https://github.com/shripad-jyothinath/bladetide.git /opt/bladetide/app
 else
-  git -C /opt/fishio/app pull --ff-only
+  git -C /opt/bladetide/app pull --ff-only
 fi
-bash /opt/fishio/app/deploy/server-install.sh
+bash /opt/bladetide/app/deploy/server-install.sh
 ```
 
-The installer is self-contained: it creates the `fishio` user, installs a private Node 22
-under `/opt/fishio/node` when the system Node is missing/too old, installs dependencies,
+The installer is self-contained: it creates the `bladetide` user, installs a private Node 22
+under `/opt/bladetide/node` when the system Node is missing/too old, installs dependencies,
 starts both systemd units on 127.0.0.1:18080/18787 and health-checks them.
 
 Then expose them through the existing Caddy. **No DNS needed for the first deployment** —
 sslip.io names resolve to the IP automatically:
 
 ```bash
-bash /opt/fishio/app/deploy/setup-caddy.sh \
+bash /opt/bladetide/app/deploy/setup-caddy.sh \
   api.69-62-81-172.sslip.io \
   room.69-62-81-172.sslip.io
 ```
 
-`setup-caddy.sh` writes `/etc/caddy/fishio.caddy`, adds one `import` line with a timestamped
+`setup-caddy.sh` writes `/etc/caddy/bladetide.caddy`, adds one `import` line with a timestamped
 backup, validates with `caddy validate`, rolls back on error and then `systemctl reload caddy`
 (never a restart). Existing sites are untouched.
 
@@ -100,14 +102,14 @@ curl -s https://room.69-62-81-172.sslip.io/healthz
 After the Vercel URL is known, set it as the allowed browser origin (console one-liner):
 
 ```bash
-sed -i 's|^WEB_ORIGIN=.*|WEB_ORIGIN=https://your-game.vercel.app|' /opt/fishio/app/apps/api/.env
-systemctl restart fishio-api
+sed -i 's|^WEB_ORIGIN=.*|WEB_ORIGIN=https://your-game.vercel.app|' /opt/bladetide/app/apps/api/.env
+systemctl restart bladetide-api
 ```
 
 
 ## 2. Configure the env files (on the server)
 
-`/opt/fishio/app/apps/api/.env`:
+`/opt/bladetide/app/apps/api/.env`:
 
 ```env
 NODE_ENV=production
@@ -119,7 +121,7 @@ INTERNAL_HMAC_SECRET=<long random string>
 #   WALLET_ENCRYPTION_KEY, ...). Never commit these.
 ```
 
-`/opt/fishio/app/apps/room-server/.env`:
+`/opt/bladetide/app/apps/room-server/.env`:
 
 ```env
 ROOM_HOST=127.0.0.1
@@ -131,10 +133,10 @@ ROOM_MAX_PLAYERS=32
 `WEB_ORIGIN` supports `*` wildcards, so preview deployments work too:
 
 ```env
-WEB_ORIGIN=https://fish-game-rouge.vercel.app,https://fish-game-*.vercel.app
+WEB_ORIGIN=https://bladetide-rouge.vercel.app,https://bladetide-*.vercel.app
 ```
 
-Then: `systemctl restart fishio-api fishio-room` (only these two units).
+Then: `systemctl restart bladetide-api bladetide-room` (only these two units).
 
 ## 2b. Hedera keys (optional — enables $GOLD, NFTs, HCS receipts)
 
@@ -146,14 +148,14 @@ You need a **Hedera testnet operator account**:
 3. On the VPS (console or SSH):
 
    ```bash
-   bash /opt/fishio/app/deploy/setup-hedera.sh
+   bash /opt/bladetide/app/deploy/setup-hedera.sh
    # prompts for Account ID + key (input hidden); non-interactive:
    # HEDERA_OPERATOR_ID=0.0.x HEDERA_OPERATOR_KEY=302e... bash deploy/setup-hedera.sh
    ```
 
    The script backs up `.env`, stores the credentials, generates `WALLET_ENCRYPTION_KEY`,
    then runs `npm run hedera:setup -- --write-env` which creates the HCS topic, the `$GOLD`
-   token and the NFT collection, writes their IDs into `.env`, and restarts `fishio-api`.
+   token and the NFT collection, writes their IDs into `.env`, and restarts `bladetide-api`.
 4. Verify: `curl -s https://api.<domain>/api/v1/status` → `"hedera":"online:testnet"`.
 
 The game automatically starts attesting finished matches (HashScan link on the game-over
@@ -163,7 +165,7 @@ For **mainnet** later: repeat with a mainnet operator funded with real HBAR and 
 
 ## 3. TLS + routing with the existing Caddy
 
-1. Copy `deploy/Caddyfile.fishio` into Caddy's conf.d (path from recon), edit the domains:
+1. Copy `deploy/Caddyfile.bladetide` into Caddy's conf.d (path from recon), edit the domains:
 
    ```caddy
    api.<your-domain>  { reverse_proxy 127.0.0.1:18080 }
@@ -192,12 +194,12 @@ of the existing file instead — still a reload, not a restart.
 4. Point the game at the VPS backend — edit `apps/web/config.js` (or inject at build):
 
    ```js
-   window.FISHIO_API_BASE = 'https://api.<your-domain>';
-   window.FISHIO_ROOM_URL = 'wss://room.<your-domain>';
+   window.BLADETIDE_API_BASE = 'https://api.<your-domain>';
+   window.BLADETIDE_ROOM_URL = 'wss://room.<your-domain>';
    ```
 
    For quick tests you can also use `?api=https://…&room=wss://…` on the URL.
-5. Add the final Vercel origin(s) to `WEB_ORIGIN` in the API env and restart `fishio-api`
+5. Add the final Vercel origin(s) to `WEB_ORIGIN` in the API env and restart `bladetide-api`
    (cookies switch to `SameSite=None; Secure` automatically when `WEB_ORIGIN` is set).
 
 ## 5. Verify
@@ -217,8 +219,8 @@ other; check `/healthz` on the room server for `online: 2`.
 ## 6. Updates & rollback
 
 - Update: re-run `deploy/package-and-upload.ps1` (or `git pull` on the server + `bash deploy/server-install.sh`).
-- Logs: `journalctl -u fishio-api -f` / `journalctl -u fishio-room -f`.
-- Rollback: keep the previous tarball, unpack it back into `/opt/fishio/app` and re-run the
+- Logs: `journalctl -u bladetide-api -f` / `journalctl -u bladetide-room -f`.
+- Rollback: keep the previous tarball, unpack it back into `/opt/bladetide/app` and re-run the
   installer; `.env` is never overwritten.
-- The SQLite DB lives at `/opt/fishio/app/apps/api/data/fishio.db` (owned by `fishio`).
-  Back it up before bigger updates: `cp --reflink=auto fishio.db fishio.db.bak`.
+- The SQLite DB lives at `/opt/bladetide/app/apps/api/data/bladetide.db` (owned by `bladetide`).
+  Back it up before bigger updates: `cp --reflink=auto bladetide.db bladetide.db.bak`.

@@ -8,7 +8,9 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { Store, UserRow } from './db.ts';
 
-export const SESSION_COOKIE = 'fishio_session';
+export const SESSION_COOKIE = 'bladetide_session';
+/** Session cookie used before the rename; still accepted so nobody is logged out. */
+export const LEGACY_SESSION_COOKIE = 'fishio_session';
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 /** Sliding renewal: sessions older than this get their 30-day window extended. */
 const SESSION_RENEW_AFTER_MS = 24 * 60 * 60 * 1000;
@@ -100,7 +102,7 @@ export function makeAuthGuard(
   cookieOptions: { secure: boolean; crossSite: boolean } = { secure: true, crossSite: false },
 ): AuthGuard {
   return async function requireUser(req, reply) {
-    const token = req.cookies?.[SESSION_COOKIE];
+    const token = req.cookies?.[SESSION_COOKIE] ?? req.cookies?.[LEGACY_SESSION_COOKIE];
     if (!token) {
       return reply.code(401).send({ error: { code: 'unauthorized', message: 'Sign in required.' } });
     }
@@ -122,6 +124,7 @@ export function makeAuthGuard(
     if (session.expires_at - now < SESSION_TTL_MS - SESSION_RENEW_AFTER_MS) {
       store.extendSession(tokenHash, now + SESSION_TTL_MS);
       setSessionCookie(reply, token, cookieOptions.secure, cookieOptions.crossSite);
+      reply.clearCookie(LEGACY_SESSION_COOKIE, { path: '/' });
     }
 
     req.user = toPublicUser(user);
@@ -229,13 +232,15 @@ export function registerAuthRoutes(
   });
 
   app.post('/api/v1/auth/logout', async (req, reply) => {
-    const token = req.cookies?.[SESSION_COOKIE];
+    const token = req.cookies?.[SESSION_COOKIE] ?? req.cookies?.[LEGACY_SESSION_COOKIE];
     if (token) store.deleteSession(sha256(token));
-    reply.clearCookie(SESSION_COOKIE, {
-      path: '/',
-      secure: options.cookieSecure,
-      sameSite: options.cookieCrossSite ? 'none' : 'lax',
-    });
+    for (const name of [SESSION_COOKIE, LEGACY_SESSION_COOKIE]) {
+      reply.clearCookie(name, {
+        path: '/',
+        secure: options.cookieSecure,
+        sameSite: options.cookieCrossSite ? 'none' : 'lax',
+      });
+    }
     return reply.code(204).send();
   });
 

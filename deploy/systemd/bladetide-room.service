@@ -1,0 +1,29 @@
+[Unit]
+Description=Bladetide room server (authoritative arena, WebSocket)
+Documentation=file:/opt/bladetide/app/deploy/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bladetide
+Group=bladetide
+WorkingDirectory=/opt/bladetide/app/apps/room-server
+Environment=NODE_ENV=production
+Environment=PATH=/opt/bladetide/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EnvironmentFile=/opt/bladetide/app/apps/room-server/.env
+ExecStart=/opt/bladetide/app/node_modules/.bin/tsx src/index.ts
+Restart=always
+RestartSec=3
+TimeoutStopSec=15
+KillSignal=SIGTERM
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target

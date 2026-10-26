@@ -1,4 +1,4 @@
--- Fish.IO — local dev auth schema (SQLite).
+-- Bladetide — local dev auth schema (SQLite).
 -- Mirrors the accounts/sessions/saves subset of db/schema.sql (Postgres).
 -- Used when Docker/Postgres is unavailable; Postgres remains the production target.
 

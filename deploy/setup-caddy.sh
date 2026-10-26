@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Safely add the Fish.IO reverse-proxy sites to the EXISTING Caddy config.
+# Safely add the Bladetide reverse-proxy sites to the EXISTING Caddy config.
 # It never edits existing site blocks — it only writes a separate snippet file
 # and adds one `import` line (with backup + validate + rollback).
 #
@@ -19,14 +19,14 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 CADDYFILE="${CADDYFILE:-/etc/caddy/Caddyfile}"
-SNIPPET_FILE="/etc/caddy/fishio.caddy"
+SNIPPET_FILE="/etc/caddy/bladetide.caddy"
 if [ ! -f "$CADDYFILE" ]; then
   echo "error: $CADDYFILE not found (set CADDYFILE=/path/to/Caddyfile)" >&2
   exit 1
 fi
 
 cat > "$SNIPPET_FILE" <<EOF
-# Fish.IO — managed by deploy/setup-caddy.sh; safe to delete.
+# Bladetide — managed by deploy/setup-caddy.sh; safe to delete.
 ${API_DOMAIN} {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:18080
@@ -36,39 +36,39 @@ ${ROOM_DOMAIN} {
 }
 EOF
 chmod 644 "$SNIPPET_FILE"
-echo "[fishio] wrote $SNIPPET_FILE"
+echo "[bladetide] wrote $SNIPPET_FILE"
 
 BACKUP=""
-if grep -q "fishio.caddy" "$CADDYFILE"; then
-  echo "[fishio] $CADDYFILE already imports the Fish.IO snippet"
+if grep -q "bladetide.caddy" "$CADDYFILE"; then
+  echo "[bladetide] $CADDYFILE already imports the Bladetide snippet"
 else
-  BACKUP="${CADDYFILE}.fishio.bak.$(date +%s)"
+  BACKUP="${CADDYFILE}.bladetide.bak.$(date +%s)"
   cp -a "$CADDYFILE" "$BACKUP"
-  printf '\n# Fish.IO sites (added by deploy/setup-caddy.sh)\nimport %s\n' "$SNIPPET_FILE" >> "$CADDYFILE"
-  echo "[fishio] added 'import $SNIPPET_FILE' (backup: $BACKUP)"
+  printf '\n# Bladetide sites (added by deploy/setup-caddy.sh)\nimport %s\n' "$SNIPPET_FILE" >> "$CADDYFILE"
+  echo "[bladetide] added 'import $SNIPPET_FILE' (backup: $BACKUP)"
 fi
 
 if command -v caddy >/dev/null 2>&1; then
-  if ! caddy validate --config "$CADDYFILE" >/tmp/fishio-caddy-validate.log 2>&1; then
+  if ! caddy validate --config "$CADDYFILE" >/tmp/bladetide-caddy-validate.log 2>&1; then
     echo "error: caddy validate failed — rolling back" >&2
-    cat /tmp/fishio-caddy-validate.log >&2
+    cat /tmp/bladetide-caddy-validate.log >&2
     if [ -n "$BACKUP" ]; then cp -a "$BACKUP" "$CADDYFILE"; fi
     exit 1
   fi
-  echo "[fishio] config validated"
+  echo "[bladetide] config validated"
 fi
 
 if systemctl reload caddy 2>/dev/null; then
-  echo "[fishio] caddy reloaded (systemd)"
+  echo "[bladetide] caddy reloaded (systemd)"
 elif command -v caddy >/dev/null 2>&1; then
   caddy reload --config "$CADDYFILE"
-  echo "[fishio] caddy reloaded (cli)"
+  echo "[bladetide] caddy reloaded (cli)"
 else
   echo "error: could not reload caddy" >&2
   exit 1
 fi
 
 echo
-echo "[fishio] HTTPS endpoints (certificates issue on first request):"
+echo "[bladetide] HTTPS endpoints (certificates issue on first request):"
 echo "  https://${API_DOMAIN}/healthz"
 echo "  https://${ROOM_DOMAIN}/healthz"

@@ -1,0 +1,30 @@
+[Unit]
+Description=Bladetide API (Fastify: accounts, saves, Hedera)
+Documentation=file:/opt/bladetide/app/deploy/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bladetide
+Group=bladetide
+WorkingDirectory=/opt/bladetide/app/apps/api
+Environment=NODE_ENV=production
+Environment=PATH=/opt/bladetide/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EnvironmentFile=/opt/bladetide/app/apps/api/.env
+ExecStart=/opt/bladetide/app/node_modules/.bin/tsx src/index.ts
+Restart=always
+RestartSec=3
+TimeoutStopSec=15
+KillSignal=SIGTERM
+
+# Hardening (the app only needs its own tree + the SQLite data dir)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/bladetide/app/apps/api/data
+MemoryMax=768M
+
+[Install]
+WantedBy=multi-user.target

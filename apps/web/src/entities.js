@@ -1,5 +1,5 @@
 /**
- * Fish IO - Entities (Fish, Sharks, 14 Weapons, 16 Species, 12 Hats, Power-ups & Kinematics)
+ * Bladetide - Entities (Fish, Sharks, 14 Weapons, 16 Species, 12 Hats, Power-ups & Kinematics)
  */
 class Fish {
     constructor(x, y, name = 'Fish', skinId = 'baby_shark', weaponId = 'coral_dagger', isBot = false, hatId = 'none') {

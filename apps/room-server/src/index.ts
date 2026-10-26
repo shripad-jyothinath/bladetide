@@ -1,5 +1,5 @@
 /**
- * Fish.IO room server entry point.
+ * Bladetide room server entry point.
  *
  * One process = one arena (M1). Serves:
  *   GET /healthz   JSON room status
@@ -53,7 +53,7 @@ export async function startServer(config: RoomServerConfig = loadConfig()): Prom
     if (req.url === '/' || req.url?.startsWith('/?')) {
       res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
       res.end(
-        `Fish.IO room server (M1)\nroom: ${config.roomName}\nwebocket clients: ${room.stats().online}/${config.maxPlayers}\n`,
+        `Bladetide room server (M1)\nroom: ${config.roomName}\nwebocket clients: ${room.stats().online}/${config.maxPlayers}\n`,
       );
       return;
     }

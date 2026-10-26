@@ -1,5 +1,5 @@
 /**
- * Fish IO - Complete Food, Power-ups, Drops & Treasure Chests System
+ * Bladetide - Complete Food, Power-ups, Drops & Treasure Chests System
  */
 class FoodManager {
     constructor(worldWidth = 3500, worldHeight = 3500, maxFood = 250) {

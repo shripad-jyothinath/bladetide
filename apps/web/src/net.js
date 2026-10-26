@@ -1,5 +1,5 @@
 /**
- * Fish.IO — M1 online client (server-authoritative arena).
+ * Bladetide — M1 online client (server-authoritative arena).
  *
  * Responsibilities:
  *  - connect to the room server, send hello/input/ping/respawn
@@ -20,7 +20,8 @@
   const SNAP_THRESHOLD = 260;   // teleport when prediction is this far off
   const MAX_SAMPLES = 24;
   const RECONNECT_DELAYS = [500, 1500, 3000];
-  const TOKEN_KEY = 'fishio_room_token';
+  const TOKEN_KEY = 'bladetide_room_token';
+  const LEGACY_TOKEN_KEY = 'fishio_room_token';
 
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
   const r2 = (n) => Math.round(n * 100) / 100;
@@ -33,7 +34,9 @@
   }
 
   function resolveRoomUrl() {
-    if (window.FISHIO_ROOM_URL) return window.FISHIO_ROOM_URL;
+    if (window.BLADETIDE_ROOM_URL || window.FISHIO_ROOM_URL) {
+      return window.BLADETIDE_ROOM_URL || window.FISHIO_ROOM_URL;
+    }
     try {
       const param = new URLSearchParams(window.location.search).get('room');
       if (param) return param;
@@ -42,7 +45,7 @@
     }
     const host = window.location.hostname || '127.0.0.1';
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const port = window.FISHIO_ROOM_PORT || 8787;
+    const port = window.BLADETIDE_ROOM_PORT || window.FISHIO_ROOM_PORT || 8787;
     return `${proto}//${host}:${port}`;
   }
 
@@ -306,7 +309,10 @@
       this.playerId = msg.id;
       if (msg.token) {
         this.token = msg.token;
-        try { window.sessionStorage.setItem(TOKEN_KEY, msg.token); } catch { /* ignore */ }
+        try {
+          window.sessionStorage.setItem(TOKEN_KEY, msg.token);
+          window.sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+        } catch { /* ignore */ }
       }
       this.world = msg.world || this.world;
       this.lastMap = msg.map || this.lastMap;
@@ -942,7 +948,10 @@
         try { if (stale.socket) stale.socket.close(); } catch { /* ignore */ }
       }
       let token = null;
-      try { token = window.sessionStorage.getItem(TOKEN_KEY); } catch { /* ignore */ }
+      try {
+        token = window.sessionStorage.getItem(TOKEN_KEY) || window.sessionStorage.getItem(LEGACY_TOKEN_KEY);
+        if (token) window.sessionStorage.setItem(TOKEN_KEY, token);
+      } catch { /* ignore */ }
       const client = new OnlineClient(game);
       client.token = token;
       await client.connect(loadout);

@@ -1,5 +1,5 @@
 /**
- * Fish IO - Smart Bot AI Controller
+ * Bladetide - Smart Bot AI Controller
  */
 const BOT_NAMES = [
     'SharkBite', 'AquaKing', 'DeepPredator', 'SushiSlayer', 'Poseidon',

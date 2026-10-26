@@ -1,5 +1,5 @@
 /**
- * Fish IO - Web Audio API Procedural Sound Synthesizer
+ * Bladetide - Web Audio API Procedural Sound Synthesizer
  * Zero external audio files required - works offline and instantly!
  */
 class SoundEngine {

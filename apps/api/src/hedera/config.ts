@@ -78,7 +78,7 @@ export function loadHederaSettings(env: NodeJS.ProcessEnv = process.env): Hedera
     topicId: (env.HEDERA_TOPIC_ID ?? '').trim(),
     goldTokenId: (env.HEDERA_GOLD_TOKEN_ID ?? '').trim(),
     nftCollectionId: (env.HEDERA_NFT_COLLECTION_ID ?? '').trim(),
-    goldName: env.HEDERA_GOLD_NAME ?? 'Fish.IO Gold',
+    goldName: env.HEDERA_GOLD_NAME ?? 'Bladetide Gold',
     goldSymbol: env.HEDERA_GOLD_SYMBOL ?? 'GOLD',
     goldDecimals: Math.min(8, num(env.HEDERA_GOLD_DECIMALS, 2)),
     goldInitialSupply: num(env.HEDERA_GOLD_INITIAL_SUPPLY, 1_000_000),

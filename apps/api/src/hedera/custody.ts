@@ -15,8 +15,16 @@ import type { Store } from '../db.ts';
 import type { HederaClient } from './client.ts';
 import type { HederaSettings } from './config.ts';
 
-const DEFAULT_DEV_SECRET = 'fishio-dev-wallet-encryption-key-change-me';
+const DEFAULT_DEV_SECRET = 'bladetide-dev-wallet-encryption-key-change-me';
+const LEGACY_DEV_SECRET = 'fishio-dev-wallet-encryption-key-change-me';
+const KEY_SALT = 'bladetide-wallet-keys-v1';
+// Do not remove: existing custodial wallets were encrypted with this salt.
+const LEGACY_KEY_SALT = 'fishio-wallet-keys-v1';
 let warnedAboutFallback = false;
+
+function deriveKey(secret: string, salt: string): Buffer {
+  return crypto.scryptSync(secret, salt, 32);
+}
 
 function masterKey(): Buffer {
   const secret = process.env.WALLET_ENCRYPTION_KEY || DEFAULT_DEV_SECRET;
@@ -26,7 +34,14 @@ function masterKey(): Buffer {
       '[hedera] WALLET_ENCRYPTION_KEY is not set — using the built-in dev key for custodial wallets. Set a strong key before mainnet.',
     );
   }
-  return crypto.scryptSync(secret, 'fishio-wallet-keys-v1', 32);
+  return deriveKey(secret, KEY_SALT);
+}
+
+/** Keys that can open data written before the Bladetide rename. */
+function legacyMasterKeys(): Buffer[] {
+  const configured = process.env.WALLET_ENCRYPTION_KEY;
+  const secrets = configured ? [configured] : [DEFAULT_DEV_SECRET, LEGACY_DEV_SECRET];
+  return secrets.map((secret) => deriveKey(secret, LEGACY_KEY_SALT));
 }
 
 export interface EncryptedSecret {
@@ -46,11 +61,24 @@ export function encryptSecret(plaintext: string): EncryptedSecret {
   };
 }
 
-export function decryptSecret(secret: EncryptedSecret): string {
-  const decipher = crypto.createDecipheriv('aes-256-gcm', masterKey(), Buffer.from(secret.iv, 'base64'));
+function decryptWithKey(key: Buffer, secret: EncryptedSecret): string {
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(secret.iv, 'base64'));
   decipher.setAuthTag(Buffer.from(secret.tag, 'base64'));
   const decrypted = Buffer.concat([decipher.update(Buffer.from(secret.cipher, 'base64')), decipher.final()]);
   return decrypted.toString('utf8');
+}
+
+export function decryptSecret(secret: EncryptedSecret): string {
+  const keys = [masterKey(), ...legacyMasterKeys()];
+  let lastError: unknown;
+  for (const key of keys) {
+    try {
+      return decryptWithKey(key, secret);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError;
 }
 
 export interface CustodialWalletInfo {
@@ -107,7 +135,7 @@ export class CustodyService {
         // Slots so token/NFT airdrops (rewards, mints) land as real balances instead
         // of sitting as pending airdrops the player would have to accept manually.
         .setMaxAutomaticTokenAssociations(10)
-        .setAccountMemo('Fish.IO auto wallet')
+        .setAccountMemo('Bladetide auto wallet')
         .execute(this.hedera.client);
       const receipt = await tx.getReceipt(this.hedera.client);
       const accountId = receipt.accountId?.toString();

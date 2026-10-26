@@ -1,5 +1,5 @@
 /**
- * Fish IO - Main Engine, Physics, Collision, Maps, Power-ups & Game Loop
+ * Bladetide - Main Engine, Physics, Collision, Maps, Power-ups & Game Loop
  */
 if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r = 0) {

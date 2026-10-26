@@ -1,9 +1,9 @@
-# Fish.IO — Caddy reverse-proxy snippet
+# Bladetide — Caddy reverse-proxy snippet
 #
 # The VPS already runs Caddy (ports 80/443). Add ONE file next to the existing
 # Caddy config (do not edit existing site blocks) and reload:
 #
-#   sudo cp deploy/Caddyfile.fishio /etc/caddy/conf.d/fishio.caddy   # or wherever conf.d lives
+#   sudo cp deploy/Caddyfile.bladetide /etc/caddy/conf.d/bladetide.caddy   # or wherever conf.d lives
 #   sudo caddy validate --config /etc/caddy/Caddyfile
 #   sudo systemctl reload caddy
 #
@@ -21,6 +21,6 @@ room.example.com {
 
 # Optional: serve the game itself from the VPS too (otherwise Vercel serves it).
 # game.example.com {
-# 	root * /opt/fishio/app/apps/web
+# 	root * /opt/bladetide/app/apps/web
 # 	file_server
 # }
