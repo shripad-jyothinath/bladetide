@@ -144,8 +144,8 @@ flowchart LR
     subgraph VPS["VPS · Caddy TLS"]
         API["Fastify API<br/>accounts · saves · economy"]
         ROOM["Room server<br/>authoritative sim @ 60 Hz"]
-        DB[("SQLite dev<br/>PostgreSQL prod")]
-        REDIS[("Redis<br/>room presence")]
+        DB[("SQLite dev<br/>PostgreSQL prod path")]
+        REDIS[("Redis<br/>planned presence")]
     end
 
     subgraph Hedera["Hedera testnet"]
@@ -159,7 +159,7 @@ flowchart LR
     VERCEL --> API
     NET <-->|"WebSocket · inputs / snapshots"| ROOM
     API <--> DB
-    API <--> REDIS
+    API -.-> REDIS
     ROOM -->|"HMAC-signed results"| API
     API -->|"attest + mint"| HCS
     API -->|"rewards + cosmetics"| HTS
@@ -196,7 +196,7 @@ More detail: [`docs/MULTIPLAYER_PLAN.md`](docs/MULTIPLAYER_PLAN.md) · [`docs/ad
 | Game client | Vanilla JavaScript, HTML5 Canvas, Web Audio, Three.js previews (vendored, BSD/MIT) |
 | API | Node.js, TypeScript, Fastify, `@fastify/cookie`, `@fastify/cors`, `@fastify/static` |
 | Realtime | `ws` WebSocket server, fixed 60 Hz simulation, JSON protocol |
-| Data | SQLite via `better-sqlite3` for local development; PostgreSQL 16 + Redis 7 as the production path |
+| Data | SQLite via `better-sqlite3` for local development; PostgreSQL 16 + Redis 7 are the planned production path |
 | Chain | Hedera testnet via `@hiero-ledger/sdk`: HCS, HTS fungible tokens, HTS NFTs, Mirror Node |
 | Tooling | npm workspaces, `tsx`, Node test runner, TypeScript `tsc` |
 
